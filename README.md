@@ -24,7 +24,9 @@
  
   - [CI Stage](#CI-Stage)
     
-    - [Increment Version Dynamically Stage](#Increment-Version-Dynamically-Stage) 
+    - [Increment Version Dynamically Stage](#Increment-Version-Dynamically-Stage)
+   
+    - [Build Jar Stage](#Build-Jar-Stage)
   
 # AWS-EKS 
 
@@ -429,6 +431,26 @@ pipeline {
         }
     }
 } 
+```
+
+#### Build Jar Stage 
+
+To build Gradle jar : `gradle clean build` 
+
+ - I want to clean the previous stage and then build new one
+
+The code will look like this : 
+
+```
+stage("Build Jar") {
+  steps {
+    script {
+      echo "Build Gradle Jar ...."
+
+      sh 'gradle clean build'
+    }
+  }
+}
 ```
 
 
