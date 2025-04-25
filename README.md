@@ -379,6 +379,8 @@ After followed the Docs I have configured Dynamic Increase Version in Gradle :
    
  - To Realse : `gradlew releaseVersion` # Remove SNAPSHOT
 
+Now In Jenkinsfile I will create a new Stage called `Version Increment Dynamic`
+
 
 
 
