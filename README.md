@@ -235,11 +235,11 @@ Step 4 : Install Jenkins : `docker run -p 8080:8080 -p 50000:50000 -d -v jenkins
 
  - `-v jenkins_home:/var/jenkins_home`: Mount volumes
         
-        - Jenkins is just like Nexus, It will store a lot of data . When I configure Jenkins, Create User, Create Jobs to run, Install Plugin and so ons . All of these will be store as Data
+   - Jenkins is just like Nexus, It will store a lot of data . When I configure Jenkins, Create User, Create Jobs to run, Install Plugin and so ons . All of these will be store as Data
      
-        - jenkins_home : This folder doesn't exist yet (Name Volume references) . Docker will create a physical path on the server will store a data with that Name References
+   - jenkins_home : This folder doesn't exist yet (Name Volume references) . Docker will create a physical path on the server will store a data with that Name References
      
-        - /var/jenkins_home : This is a Actual directory in Cotnainer (Inside Jenkins) that will store data
+   - /var/jenkins_home : This is a Actual directory in Cotnainer (Inside Jenkins) that will store data
 
 Step 5 : In the UI . First Access Jenkins will give me a path to get the Password . I will `docker exec -t <container-id> bash` go inside Jenkins and get the password
 
