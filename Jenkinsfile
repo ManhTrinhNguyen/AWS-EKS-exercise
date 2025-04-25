@@ -19,9 +19,14 @@ pipeline {
 
                     sh 'gradle patchVersionUpdate'
 
-                    def content = readFile('version.properties')
+                    // Read file content
+                    def props = new Properties()
+                    def fileContent = readFile('version.properties')
+                    props.load(new StringReader(fileContent))
 
-                    echo "${content}"
+                    echo "Major Version: ${props['major']}"
+                    echo "Minor Version: ${props['minor']}"
+                    echo "Patch Version: ${props['patch']}"
                 }
             }
         }
