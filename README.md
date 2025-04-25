@@ -14,6 +14,14 @@
  
   - [Install Docker In Jenkins](#Install-Docker-In-Jenkins)
  
+  - [Install Build tools in Jenkins](#[Install-Build-tools-in-Jenkins)
+ 
+  - [Create Multi Branches Pipelines](#Create-Multi-Branches-Pipelines)
+ 
+  - [Required field of Jenkins](#Required-field-of-Jenkins)
+ 
+  - [Configure build tools in Jenkinsfile](#Configure-build-tools-in-Jenkinsfile)
+ 
   - [CI Stage](#CI-Stage)
     
     - [Increment Version Dynamically Stage](#Increment-Version-Dynamically-Stage) 
@@ -297,6 +305,10 @@ Things need to fix :
  - `curl https://get.docker.com/ > dockerinstall && chmod 777 dockerinstall && ./dockerinstall` . With this Curl command Jenkins container is going to fetch the latest Version of Docker from official size so it can run inside the container, then I will set correct permission the run through the Install
 
  - Set correct Permission on docker.sock so I can run command inside the container as Jenkins User `chmod 666 /var/run/docker.sock`: docker.sock is a Unix socket file used by Docker daemon to communicate with Docker Client
+   
+#### Install Build tools in Jenkins
+
+Go to Dashboard -> Manage Jenkins -> Choose Tools -> Add Gradle (Bcs in this project I use Gradle) -> Give it a name is `gradle-8.14`
 
 #### Create Multi Branches Pipelines 
 
@@ -304,7 +316,15 @@ In Jenkins UI -> Dashboard -> New items -> Choose Multi branch Pipelines
 
 In the Configuration : 
 
- - Branch Source: Choose Git 
+ - Branch Source: Choose Git then add Github url into it
+
+ - Credentials : To create my Github Credential -> Jenkins Dashboard -> Manage Jenkins -> Choose Credentials -> Choose Add Credentials -> Choose Username with Password -> Then give my Github user name and my Github password to it (Github password is a Github token)
+
+ - Behaviors : Choose `Filter by name (with regular expression)` give it value `.*` this mean choose all the branch
+
+ - Build Configuration : By Jenkins -> Script path : Jenkinsfile this mean Jenkins will look for the Jenkins from the Repo url I gave above
+
+Now I have my Multi Branches Pipelines I can start building in the `Jenkinsfile`
 
 #### CI Stage 
 
@@ -321,6 +341,27 @@ CI include :
  - Login to ECR stage
 
  - Push Image to ECR
+
+#### Required field of Jenkins 
+
+`pipeline` : Must be top level
+
+`agent any`: This build on any available Jenkins Agent . Agent can be a Node, it could be executable on that Node . This is more relevant when I have Jenkins Cluster with Master and Slaves where I have Window Nodes and Linux Nodes ....
+
+`stages` : Where the whole work happen . I have many diffent Stages in Pipeline . Inside Stages I have Stage , Inside Stage I have steps to execute that Stage
+
+#### Configure build tools in Jenkinsfile 
+
+Before any Stages I need to configure build tools  that I use in this project . In this case I use Gradle 
+
+```
+pipeline {   
+    agent any
+    tools {
+        gradle 'gradle-8.14'
+    }
+}
+```
 
 #### Increment Version Dynamically Stage 
 
