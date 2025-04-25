@@ -31,5 +31,25 @@ pipeline {
                 }
             }
         }
+
+        stage("Build Jar") {
+          steps {
+            script {
+              echo "Build Gradle Jar ...."
+
+              sh 'gradle clean build'
+            }
+          }
+        }
+
+        stage("Build Docker Image") {
+          steps {
+            script {
+              echo "Build Docker Image"
+
+              sh "docker build -t ${env.IMAGE_NAME} ."
+            }
+          }
+        }
     }
 } 
