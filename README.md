@@ -13,6 +13,10 @@
   - [Install Stage View Plugin](#Install-Stage-View-Plugin)
  
   - [Install Docker In Jenkins](#Install-Docker-In-Jenkins)
+ 
+  - [CI Stage](#CI-Stage)
+    
+    - [Increment Version Dynamically Stage](#Increment-Version-Dynamically-Stage) 
   
 # AWS-EKS 
 
@@ -286,9 +290,45 @@ Get inside Jenkins as Root : `docker exec -it -u 0 <container_id> bash`
 
 Things need to fix :
 
- - `curl` https://get.docker.com/ > dockerinstall && chmod 777 dockerinstall && ./dockerinstall . With this Curl command Jenkins container is going to fetch the latest Version of Docker from official size so it can run inside the container, then I will set correct permission the run through the Install
+ - `apt update` To update Package Manager
+
+ - `apt install curl` : Install `curl`
+
+ - `curl https://get.docker.com/ > dockerinstall && chmod 777 dockerinstall && ./dockerinstall` . With this Curl command Jenkins container is going to fetch the latest Version of Docker from official size so it can run inside the container, then I will set correct permission the run through the Install
 
  - Set correct Permission on docker.sock so I can run command inside the container as Jenkins User `chmod 666 /var/run/docker.sock`: docker.sock is a Unix socket file used by Docker daemon to communicate with Docker Client
+
+#### Create Multi Branches Pipelines 
+
+In Jenkins UI -> Dashboard -> New items -> Choose Multi branch Pipelines 
+
+In the Configuration : 
+
+ - Branch Source: Choose Git 
+
+#### CI Stage 
+
+CI include : 
+
+ - Increment Version Dynamically Stage
+ 
+ - Testing Stage
+ 
+ - Build Jar Stage
+
+ - Build Docker Image Stage
+
+ - Login to ECR stage
+
+ - Push Image to ECR
+
+#### Increment Version Dynamically Stage 
+
+I want to be able to automatically increase that version inside my build . So When I commit changes to Jenkins, Jenkins build pipeline basically should increment the version and release a new application . This should all happen immediately .
+
+
+
+
 
 
 
