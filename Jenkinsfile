@@ -11,6 +11,10 @@ pipeline {
         gradle 'gradle-8.14'
     }
 
+    environment {
+      ECR_REPO = "565393037799.dkr.ecr.us-west-1.amazonaws.com/java-app"
+    }
+
     stages {
         stage("Version Increment Dynamic"){
             steps {
@@ -21,9 +25,9 @@ pipeline {
 
                     def version = readProperties(file: 'version.properties')
 
-                    echo "Major Version: ${version['major']}"
-                    echo "Minor Version: ${version['minor']}"
-                    echo "Patch Version: ${version['patch']}"
+                    env.IMAGE_NAME = "${ENR_REPO}:${version['major']}.${version['minor']}.${version['patch']}"
+
+                    echo "${IMAGE_NAME}"
                 }
             }
         }
