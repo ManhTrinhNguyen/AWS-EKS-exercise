@@ -27,6 +27,8 @@
     - [Increment Version Dynamically Stage](#Increment-Version-Dynamically-Stage)
    
     - [Build Jar Stage](#Build-Jar-Stage)
+   
+    - [Build Docker Image Stage](#Build-Docker-Image-Stage)
   
 # AWS-EKS 
 
@@ -448,6 +450,51 @@ stage("Build Jar") {
       echo "Build Gradle Jar ...."
 
       sh 'gradle clean build'
+    }
+  }
+}
+```
+
+#### Build Docker Image Stage 
+
+I have Dockefile created in my Repository 
+
+```
+FROM openjdk:17.0.2-jdk
+EXPOSE 8080
+RUN mkdir /opt/app
+COPY build/libs/bootcamp-docker-java-mysql-project-1.0-SNAPSHOT.jar /opt/app
+WORKDIR /opt/app
+CMD ["java", "-jar", "bootcamp-docker-java-mysql-project-1.0-SNAPSHOT.jar"]
+```
+
+But I want my Dockerfile to read Version dynamically so I will put a `*` in a version like this : 
+
+```
+FROM openjdk:17.0.2-jdk
+EXPOSE 8080
+RUN mkdir /opt/app
+COPY build/libs/bootcamp-docker-java-mysql-project-*-SNAPSHOT.jar /opt/app
+WORKDIR /opt/app
+
+CMD java -jar bootcamp-docker-java-mysql-project-*-SNAPSHOT.jar
+```
+
+To build docker Image : `docker build -t <ecr-repo>/<app-name>:<app-version>`
+
+  - I need to tag ECR repo endpoint bcs When I want to push docker image into ECR, Docker know to endpoint that it need to push to image to
+
+  - In the `Version Increment Dynamic Stage` I already have a IMAGE_NAME with a ECR repo tags I can use it as a ENV
+
+The whole code will look like this :
+
+```
+stage("Build Docker Image") {
+  steps {
+    script {
+      echo "Build Docker Image"
+
+      sh "docker build -t ${env.IMAGE_NAME} ."
     }
   }
 }
