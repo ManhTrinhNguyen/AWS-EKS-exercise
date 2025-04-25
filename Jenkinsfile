@@ -27,7 +27,7 @@ pipeline {
 
                     env.IMAGE_NAME = "${ENR_REPO}:${version['major']}.${version['minor']}.${version['patch']}"
 
-                    echo "${IMAGE_NAME}"
+                    echo "${env.IMAGE_NAME}"
                 }
             }
         }
