@@ -5,6 +5,8 @@
 - [Deploy Java Application](#Deploy-Java-Application)
 
 - [Setup Continuous Deployment with Jenkins](#Setup-Continuous-Deployment-with-Jenkins)
+
+  - [Deploy Jenkins as a Docker Container](#Deploy-Jenkins-as-a-Docker-Container) 
   
 # AWS-EKS 
 
@@ -209,6 +211,39 @@ I have a `CrashLoopBackOff` means:
 
 ## Setup Continuous Deployment with Jenkins
 
+#### Deploy Jenkins as a Docker Container
+
+Step 1 : Connect to Server : `ssh root@<IP-address>`
+
+Step 2 : Create Firewall Rule to it
+
+  - Add Custom Port 8080 : This is where Jenkin start . This is where I will expose it 
+   
+- Add Port 22 : To SSH
+
+Step 3 : Install Docker : `apt install docker.io`
+
+Step 4 : Install Jenkins : `docker run -p 8080:8080 -p 50000:50000 -d -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts`
+
+ - First 8080 Port : Where the browser access to (The server itself).
+   
+ - Second 8080 Port : Is the Port of the Container itsefl (Jenkins itself) 
+   
+ - Port 50000:50000 : This is where Jenkins Master and Worker nodes communicate . Jenkins can actually built and started as a Cluster if I have large Workloads that I am running with Jenkins
+   
+ - `-d` : Detach Mode. Run the cotainer in the background
+
+ - `-v jenkins_home:/var/jenkins_home`: Mount volumes
+        
+        - Jenkins is just like Nexus, It will store a lot of data . When I configure Jenkins, Create User, Create Jobs to run, Install Plugin and so ons . All of these will be store as Data
+     
+        - jenkins_home : This folder doesn't exist yet (Name Volume references) . Docker will create a physical path on the server will store a data with that Name References
+     
+        - /var/jenkins_home : This is a Actual directory in Cotnainer (Inside Jenkins) that will store data
+
+Step 5 : In the UI . First Access Jenkins will give me a path to get the Password . I will `docker exec -t <container-id> bash` go inside Jenkins and get the password
+
+ - To check Volume that I create : `docker inspect volume jenkins_home`
 
 
 
