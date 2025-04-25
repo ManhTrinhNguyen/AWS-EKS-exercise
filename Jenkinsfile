@@ -20,7 +20,7 @@ pipeline {
                     sh 'gradle patchVersionUpdate'
 
                     // Read file content
-                    def readpropscontent = readProperties file: 'version.properties'
+                    def readpropscontent = readProperties('version.properties')
           
                     echo "Major Version: ${readpropscontent['major']}"
                 }
