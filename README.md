@@ -1,6 +1,30 @@
+- [Deploy Mysql](#Deploy-Mysql)
+
+- [Deploy Mysql for Production](#Deploy-Mysql-for-Production)
+
+- [Deploy Java Application](#Deploy-Java-Application)
+
+- [Setup Continuous Deployment with Jenkins](#Setup-Continuous-Deployment-with-Jenkins)
+  
 # AWS-EKS 
 
 ## Create EKS Cluster . 
+
+#### Connect kubectl locally with EKS Cluster
+
+Eventhough I don't have Worker Nodes yet . I can still can talk to the API Server bcs Control Plane is running
+
+They way to connect is create kubeconfig file for newly created EKS Cluster
+
+Configure Kubectl to connect to EKS Cluster
+
+Step 1: To see AWS configure detail : `aws configure list`
+
+Step 2: To create kubeconfig file locally : `aws eks update-kubeconfig --name <cluster-name>`
+
+-- --name : Connection info for Cluster . Which is the Cluster Name
+
+ - After Created kubeconfig file my Local machine already connected to AWS K8 Cluster. The file will store in `.kube/config`
 
 ## Deploy Mysql and phpmyadmin 
 
@@ -175,10 +199,15 @@ data:
   database_server: "mysql-primary-0:mysql-primary-headless"
 ```
 
+I have a `CrashLoopBackOff` means:
 
+ - Your Pod starts → crashes → restarts → crashes again, and this keeps happening in a loop.
 
+ - To know happen I use `kubectl logs <pod-name>`
 
+ - Or I can use `kubectl describe pod <pod-name>` to see events of the pod generating
 
+## Setup Continuous Deployment with Jenkins
 
 
 
