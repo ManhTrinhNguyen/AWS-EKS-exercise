@@ -381,6 +381,59 @@ After followed the Docs I have configured Dynamic Increase Version in Gradle :
 
 Now In Jenkinsfile I will create a new Stage called `Version Increment Dynamic`
 
+ - In this case I want to increase Patch version : `sh 'gradle patchVersionUpdate'` 
+
+ - To read `version.properties` file in Gradle 
+  
+   - Install `Pipeline Utility Steps` plugin so I can use `readProperties(file: 'version.properties')`
+  
+   - `readProperties`, `writeProperties`, `readYaml`, `readJSON`, etc., are all inside this plugin.
+  
+ - After I have a Version values I can set `IMAGE_NAME` and put it in the ENV for the next Stage use `env.IMAGE_NAME = "${ECR_REPO}:${version['major']}.${version['minor']}.${version['patch']}"`
+
+ - I also created the ENV for ECR_REPO :
+
+   ```
+   environment {
+      ECR_REPO = "565393037799.dkr.ecr.us-west-1.amazonaws.com/java-app"
+    }
+   ```
+The whole code will look like this : 
+
+```
+pipeline {   
+    agent any
+    tools {
+        gradle 'gradle-8.14'
+    }
+
+    environment {
+      ECR_REPO = "565393037799.dkr.ecr.us-west-1.amazonaws.com/java-app"
+    }
+
+    stages {
+        stage("Version Increment Dynamic"){
+            steps {
+                script {
+                    echo 'Increase Patch Version ....'
+
+                    sh 'gradle patchVersionUpdate'
+
+                    def version = readProperties(file: 'version.properties')
+
+                    env.IMAGE_NAME = "${ECR_REPO}:${version['major']}.${version['minor']}.${version['patch']}"
+
+                    echo "${env.IMAGE_NAME}"
+                }
+            }
+        }
+    }
+} 
+```
+
+
+
+
 
 
 
