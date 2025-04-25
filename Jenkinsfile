@@ -25,7 +25,7 @@ pipeline {
 
                     def version = readProperties(file: 'version.properties')
 
-                    env.IMAGE_NAME = "${ENR_REPO}:${version['major']}.${version['minor']}.${version['patch']}"
+                    env.IMAGE_NAME = "${ECR_REPO}:${version['major']}.${version['minor']}.${version['patch']}"
 
                     echo "${env.IMAGE_NAME}"
                 }
