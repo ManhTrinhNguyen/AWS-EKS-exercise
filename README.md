@@ -365,7 +365,20 @@ pipeline {
 
 #### Increment Version Dynamically Stage 
 
+To automatically Increase Version with Gradle Document (https://theekshanawj.medium.com/gradle-automate-application-version-management-with-gradle-4b97e1df84a3)
+
 I want to be able to automatically increase that version inside my build . So When I commit changes to Jenkins, Jenkins build pipeline basically should increment the version and release a new application . This should all happen immediately .
+
+After followed the Docs I have configured Dynamic Increase Version in Gradle :
+
+ - To Increase Major Version : `gradle majorVersionUpdate`
+   
+ - To Increase Minor Version : `gradle minorVersionUpdate`
+   
+ - To Increase Patch Version : `gradle patchVersionUpdate`
+   
+ - To Realse : `gradlew releaseVersion` # Remove SNAPSHOT
+
 
 
 
