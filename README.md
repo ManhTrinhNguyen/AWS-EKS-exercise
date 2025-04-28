@@ -892,7 +892,25 @@ To pass value from Jenkinsfile to Yaml file:
   
    - Install gettext-base : apt-get install gettext-base
   
- - I pass a file to `envsubst` command `envsubst < config.yaml` . It will take that file and it will look for a syntax of `$` and name of Variable and it will try to match that name of the variable to any ENV defined in that context . Then it will create a temporary file with the values set and I will pipe that temporary file and pass it as a parameter like this : `envsubst < config.yaml | kubectl apply -f`  
+ - I pass a file to `envsubst` command `envsubst < config.yaml` . It will take that file and it will look for a syntax of `$` and name of Variable and it will try to match that name of the variable to any ENV defined in that context . Then it will create a temporary file with the values set and I will pipe that temporary file and pass it as a parameter like this : `envsubst < config.yaml | kubectl apply -f`
+
+My Deployment Stage will look like this :
+
+```
+stage("Deploy with Kubernetes") {
+  environment{
+    AWS_ACCESS_KEY_ID = credentials('Aws_Access_Key_Id')
+    AWS_SECRET_ACCESS_KEY = credentials('Aws_Secret_Access_Key')
+    APP_NAME = "java-app"
+  }
+  steps {
+    script {
+      echo "Deploy Java Application ...."
+      sh "envsubst < Kubernetes/java-app.yaml | kubectl apply -f -"
+    }
+  }
+}
+```
 
 
 
