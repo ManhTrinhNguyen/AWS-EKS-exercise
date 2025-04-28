@@ -39,6 +39,10 @@
     - [Configure Webhook to Trigger CI Pipeline Automatically on Every Change](#Configure-Webhook-to-Trigger-CI-Pipeline-Automatically-on-Every-Change)
    
     - [Ignore Jenkins Commit for Jenkins Pipeline Trigger](#Ignore-Jenkins-Commit-for-Jenkins-Pipeline-Trigger)
+   
+  - [CD Stage](#CD-Stage)
+ 
+    - [Create Secret Component AWS ECR Credentials](#Create-Secret-Component-AWS-ECR-Credentials)
   
 # AWS-EKS 
 
@@ -340,7 +344,7 @@ In the Configuration :
 
 Now I have my Multi Branches Pipelines I can start building in the `Jenkinsfile`
 
-#### CI Stage 
+### CI Stage 
 
 CI include : 
 
@@ -624,9 +628,56 @@ I need the Plugin call `Ignore Commiter Strategy`
 
 Go to my Pipeline Configuration -> Inside the Branch Sources I see the Build Strategy (This is an option just got through the plugin) -> In this option I will put the email address of the committer that I want to Ignore . I can provide a list of email
 
+### CD Stage
 
+I will setup automatic deployment to the cluster in the pipeline 
 
+#### Create Secret Component AWS ECR Credentials
 
+In this Deployment Stage I will pull Image from the ECR . In order to pull Image from ECR I need to login to ECR .
+
+ - I need to create a AWS ECR credentials Secret Component for Kubernetes in able to fetch Image from ECR
+
+ - I need to get AWS ECR Password : `aws ecr get-login-password --region us-west-1`
+
+ - I need a AWS ECR Server endpoint: `https://565393037799.dkr.ecr.us-west-1.amazonaws.com`
+
+ - Username would be : `AWS`
+
+The command to create Secret component in Kubernetes is : 
+
+```
+kubectl create secret docker-registry <my-secrect-name> \
+--docker-server=https://565393037799.dkr.ecr.us-west-1.amazonaws.com \
+--docker-username=AWS \
+--docker-password=<AWS-ECR-Password> \
+```
+
+#### Configure Kubernetes 
+
+Couple things that need for a Pipeline to deploy Image on Kubernetes : 
+
+ - I need Kubernetes Configuration for my applications's deployment and service . Everytime I want to deploy a new version of my Application I need to create Deployment and Service
+
+ - I am generating a new Image everytime Pipeline run. The image is actually dynamic . I need to set Image dynamically in K8s Configfile
+
+   - To set image in Deployment file : `$IMAGE_NAME`. This is a ENV that I set in a Jenkinsfile.
+  
+   - Also set `imagePullPolicy : always` always set a new Image when the Pod start no matter that specific Image available in that Local
+  
+To pass value from Jenkinsfile to Yaml file: 
+
+ - I use the command line tool call Environment Subsitute `envsubst`. This command actually used to substitute any variables define inside the file (in this case Yaml file) . And the syntax this command expect is `IMAGE_NAME`
+
+ - This tool I need to install inside Jenkins Container:
+
+   - SSH to Jenkins server : ssh root@
+  
+   - Get into Jenkins container : docker exec -it -u 0 <container-id> bash
+  
+   - Install gettext-base : apt-get install gettext-base
+  
+ - I pass a file to `envsubst` command `envsubst < config.yaml` . It will take that file and it will look for a syntax of `$` and name of Variable and it will try to match that name of the variable to any ENV defined in that context . Then it will create a temporary file with the values set and I will pipe that temporary file and pass it as a parameter like this : `envsubst < config.yaml | kubectl apply -f`  
 
 
 
