@@ -31,6 +31,8 @@
     - [Build Docker Image Stage](#Build-Docker-Image-Stage)
    
     - [Docker Login](#Docker-Login)
+   
+    - [Push Docker Image to ECR](#Push-Docker-Image-to-ECR)
   
 # AWS-EKS 
 
@@ -504,10 +506,51 @@ stage("Build Docker Image") {
 
 #### Docker Login 
 
+I want to login to ECR for Jenkins to able to pull image from there .
 
+I need to configure AWS ECR credentials on in Jenkins : 
 
+ - To get AWS ECR Password : `aws ecr get-login-password --region us-west-1`
 
+ - Username would be : `AWS`
 
+ - Now in Jenkins I will go to Dashboard Credentials and choose Username with Password
+
+In order to use those credentials I will use `withCredentials([]){}` plugin to pull Username and Password from Credential
+
+The Code would look like this : 
+
+```
+stage("Login to ECR") {
+  steps {
+    script {
+      withCredentials([
+        usernamePassword(credentialsId: 'AWS_Credential', usernameVariable: 'USER', passwordVariable: 'PWD')
+      ]){
+        sh "echo ${PWD} | docker login --username ${USER} --password-stdin 565393037799.dkr.ecr.us-west-1.amazonaws.com"
+
+        echo "Login successfully"
+      }
+    }
+  }
+}
+```
+
+#### Push Docker Image to ECR 
+
+In order to push Docker Image to ECR I must login to ECR successfully . That mean the previous Stage must success before this Stage 
+
+The Code will look like this :
+
+```
+stage("Push Docker Image to ECR") {
+  steps {
+    script {
+      sh "docker push ${IMAGE_NAME}"
+    }
+  }
+}
+```
 
 
 
