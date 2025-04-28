@@ -12,9 +12,8 @@ pipeline {
     }
 
     environment {
-      APP_NAME = "java-app"
       ECR_URL = "565393037799.dkr.ecr.us-west-1.amazonaws.com"
-      ECR_REPO = "${ECR_URL}/${APP_NAME}"
+      ECR_REPO = "${ECR_URL}/java-app"
     }
 
     stages {
@@ -81,6 +80,7 @@ pipeline {
           environment{
             AWS_ACCESS_KEY_ID = credentials('Aws_Access_Key_Id')
             AWS_SECRET_ACCESS_KEY = credentials('Aws_Secret_Access_Key')
+            APP_NAME = "java-app"
           }
           steps {
             script {
