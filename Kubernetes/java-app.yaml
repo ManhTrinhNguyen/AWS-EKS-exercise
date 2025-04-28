@@ -17,7 +17,7 @@ spec:
       imagePullSecrets: 
       - name: docker-authentication-ecr
       containers:
-      - name: $APP-NAME
+      - name: $APP_NAME
         image: $IMAGE_NAME
         imagePullPolicy: Always
         ports:
