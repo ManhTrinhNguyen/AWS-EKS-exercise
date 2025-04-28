@@ -57,7 +57,8 @@
     - [Configure Kubernetes Deployment and Service Yaml files](#Configure-Kubernetes-Deployment-and-Service-Yaml-files)
    
     - [Create Deployment Stage in Jenkinsfile](#Create-Deployment-Stage-in-Jenkinsfile)
-   
+
+- [Configure Autoscaling for EKS Cluster](#Configure-Autoscaling-for-EKS-Cluster)
   
 # AWS-EKS 
 
@@ -911,6 +912,23 @@ stage("Deploy with Kubernetes") {
   }
 }
 ```
+
+## Configure Autoscaling for EKS Cluster
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
