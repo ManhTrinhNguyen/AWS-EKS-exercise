@@ -35,6 +35,8 @@
     - [Push Docker Image to ECR](#Push-Docker-Image-to-ECR)
    
     - [Make Jenkin commit and push to Repository](#Make-Jenkin-commit-and-push-to-Repository)
+   
+    - [Configure Webhook to Trigger CI Pipeline Automatically on Every Change](#Configure-Webhook-to-Trigger-CI-Pipeline-Automatically-on-Every-Change)
   
 # AWS-EKS 
 
@@ -592,6 +594,26 @@ stage("Commit to Git") {
 
 When Jenkins check outs up to date code in order to start a pipeline it doesn't check out the Branch, it checkout the commit hash (the last commit from that branch). That is the reason why I need to do `sh 'git push origin HEAD:<job-branch>'`. So it saying that push all the commits that we have made inside this commit Branch inside this Jenkin Job.
 
+#### Configure Webhook to Trigger CI Pipeline Automatically on Every Change
+
+##### This way for single Pipeline in Github
+
+I want to trigger build automatically whenever commit is push to Repository 
+
+Other ways to trigger build scheduling. For example I want this build to run every 2 hours 
+
+Go to Github repo -> Settings -> Webhooks -> Click Add Webhooks -> Payload URL : `http://<my-jenkins-domain>/github-webhook/` -> Content type: application/json -> Choose just push event -> Save Webhook 
+
+##### This way for multiple Branches Pipeline 
+
+I need a Plugin call Multibranch Scan Webhook Trigger 
+
+Once installed I have `Scan by Webhook` in Multibranch Configuration -> Choose Scan by Webhook, then I have Trigger Token (This is a token that I can name whatever I want this Token will be use for the communication between Gitlab and Jenkin, or Github and Jenkins ...)
+
+To use this token I will go to Github Repo -> Choose Webhook (Webhook is basically same Integration above) . 
+
+The way it work is It will tell Github to send the notifications on specific URL using that token, and when Jenkins receive that a request it will trigger multibranch pipeline which has scan by webhook configured for that specific token . I don't need secret token 
+ 
 
 
 
