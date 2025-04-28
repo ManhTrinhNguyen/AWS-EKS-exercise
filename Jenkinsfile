@@ -55,7 +55,13 @@ pipeline {
         stage("Login to ECR") {
           steps {
             script {
-              
+              withCredentials([
+                usernamePassword(credentialsId: 'AWS_Credential', usernameVariable: 'USER', passwordVariable: 'PWD')
+              ]){
+                sh "echo ${PWD} | docker login --username ${USER} --password-stdin 565393037799.dkr.ecr.us-west-1.amazonaws.com"
+
+                echo "Login successfully"
+              }
             }
           }
         }
