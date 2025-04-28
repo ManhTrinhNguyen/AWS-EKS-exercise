@@ -12,8 +12,9 @@ pipeline {
     }
 
     environment {
+      APP_NAME="java-app"
       ECR_URL = "565393037799.dkr.ecr.us-west-1.amazonaws.com"
-      ECR_REPO = "${ECR_URL}/java-app"
+      ECR_REPO = "${ECR_URL}/${APP_NAME}"
     }
 
     stages {
@@ -72,6 +73,14 @@ pipeline {
             script {
               sh "docker push ${IMAGE_NAME}"
               echo "Push Image Success ..."
+            }
+          }
+        }
+
+        stage("Deploy with Kubernetes") {
+          steps {
+            script {
+              
             }
           }
         }
