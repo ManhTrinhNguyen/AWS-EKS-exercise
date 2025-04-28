@@ -12,7 +12,8 @@ pipeline {
     }
 
     environment {
-      ECR_REPO = "565393037799.dkr.ecr.us-west-1.amazonaws.com/java-app"
+      ECR_URL = "565393037799.dkr.ecr.us-west-1.amazonaws.com"
+      ECR_REPO = "${ECR_URL}/java-app"
     }
 
     stages {
@@ -58,10 +59,18 @@ pipeline {
               withCredentials([
                 usernamePassword(credentialsId: 'AWS_Credential', usernameVariable: 'USER', passwordVariable: 'PWD')
               ]){
-                sh "echo ${PWD} | docker login --username ${USER} --password-stdin 565393037799.dkr.ecr.us-west-1.amazonaws.com"
+                sh "echo ${PWD} | docker login --username ${USER} --password-stdin ${ECR_URL}"
 
                 echo "Login successfully"
               }
+            }
+          }
+        }
+
+        stage("Push Docker Image to ECR") {
+          steps {
+            script {
+              sh "docker push ${IMAGE_NAME}"
             }
           }
         }
