@@ -45,10 +45,10 @@
     - [Install kubectl inside Jenkins Container](#Install-kubectl-inside-Jenkins-Container)
    
     - [Install aws-iam-authenticator tool inside Jenkins Container](#Install-aws-iam-authenticator-tool-inside-Jenkins-Container)
-   
-    - [Create Secret Component AWS ECR Credentials](#Create-Secret-Component-AWS-ECR-Credentials)
 
     - [Create Kubeconfig file to connect to EKS Cluster](#Create-Kubeconfig-file-to-connect-to-EKS-Cluster)
+   
+    - [Create AWS Credentials](#Create-AWS-Credentials)
 
     - [Add AWS credentials on Jenkins for AWS account authentication](Add-AWS-credentials-on-Jenkins-for-AWS-account-authentication)
  
@@ -651,11 +651,131 @@ I need to configure a couple of Steps in order for that to work :
 
 #### Install kubectl inside Jenkins Container
 
+Connect to a Server : `ssh root@...`
+
+Check running Container : `docker ps`
+
+Go inside Jenkins container as a Root User bcs Jenkins doesn't admin permission : `docker exec -it -u 0 <container-id> bash`
+
+Inside Jenkins container install kubectl, make it executable and move it to `/usr/local/bin/kubectl` : `curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl; chmod +x ./kubectl; mv ./kubectl /usr/local/bin/kubectl`
+
+As I learned in Jenkins Moudule . Whenever I need some CLI tools execute commands with inside our Pipelines I can install them directly on a Jenkins Server or inside a Jenkins container and they will be available as Linux Command inside the Pipeline I can execute them pretty simply .
+
 #### Install aws iam authenticator tool inside Jenkins Container
 
-#### Create Secret Component AWS ECR Credentials
+This is Specific to AWS . When I created EKS Cluster I got a Kubeconfig which contain for the Secret and all the certificate for authenticating and connecting, it also container the infomation to a Cluster on AWS specificly to EKS Cluster . So I will provide all the credentials, however I need kubectl and aws-iam-authenticator both to acctually connect to EKS cluster and authenticate to it from Jenkins
+
+Install aws-iam-authentocator, make it executable and move it to /usr/local/bin :
+
+```
+curl -Lo aws-iam-authenticator https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v0.6.11/aws-iam-authenticator_0.6.11_linux_amd64
+
+chmod +x ./aws-iam-authenticator
+
+mv ./aws-iam-authenticator /usr/local/bin
+```
 
 #### Create Kubeconfig file to connect to EKS Cluster
+
+I don't have the editor inside the Jenkins Container bcs it is a lightweight container . I will create the file outside on the Host and I just simple copy the file into Jenkin Container
+
+Basic config file content 
+
+```
+apiVersion: v1
+kind: Config
+clusters:
+- cluster:
+   certificate-authority-data: <certificate-data>
+   server: <endpoint-url>
+ name: kubernetes
+contexts:
+- context:
+   cluster: kubernetes
+   user: aws
+ name: aws
+current-context: aws
+users:
+- name: aws
+ user:
+   exec:
+     apiVersion: client.authentication.k8s.io/v1beta1
+     command: /usr/local/bin/aws-iam-authenticator
+     args:
+       - "token"
+       - "-i"
+       - <cluster-name>
+
+```
+
+I need to put in Cluster name
+
+I need to put in Server API Endpoint : I can get this from EKS overview in Management Console
+
+The other thing I need to chagne is `certificate-authority-data` : This is something that get generated in EKS Cluster when its gets created and I have that file available on local in `kube/config`
+
+When I have the file ready I go inside Jenkins and create kube folder : `docker exec -it <container-id> bash` then I will go back to Jenkins home cd `~`, to see the path use pwd I should see `/var/jenkins_home` then I create .kube folder mkdir `.kube` to store kubeconfig file
+
+Then copy config file from host to Jenkins : `docker cp config container-id:/var/jenkins_home/.kube/`
+
+#### Create AWS Credentials
+
+Need Credentials for AWS Users . Locally I have work with the Admin User which is AWS User with its own secret key ID and access key . I need to configure the same for Jenkins
+
+NOTE : I don't have to use Admin User to execute command on Jenkins . Best practice would be Create AWS IAM Jenkins User for different Services that Jenkins connect to and needs to authenticate to including Docker Repos, AWS, Kubernetes and so on. And I can give that User Limited Permission for security Reason
+
+Inside Jenkins UI . Inside mutiple Branches Pipeline -> Go to Credentials -> Add Credentials -> Choose Secret Text
+
+ - I will create 2 Credentials : `access_key_id` and `secret_key_id`
+
+ - Locally my Credentials live here : `.aws/credentials`
+
+Configure `access_key_id` and `secret_key_id` in Jenkinsfile will look like this:
+
+```
+stage("Deploy with Kubernetes") {
+  environment{
+    AWS_ACCESS_KEY_ID = credentials('Aws_Access_Key_Id')
+    AWS_SECRET_ACCESS_KEY = credentials('Aws_Secret_Access_Key')
+  }
+  steps {
+    script {
+
+    }
+  }
+}
+```
+
+Now I can execute kubectl bcs I have it installed inside my Jenkins Container . With `kubectl` execution `aws-iam-authenticator` also execute in the background
+
+Before kubectl execute success I need to set or export ENV that will be use in that connection . I am setting those 2 ENV as a Context for the kubectl command to execute bcs in the background IAM will be executed an that command will need Access Credentials to connect to AWS . Bcs I don't have .aws/config so I have to config like this .
+
+**Wrap up**: Kubectl get executed which will use kubeconfig files created in .kube/config and inside that config file it is configure that aws-IAM-authenticator need to be use in order to authenticate with AWS account . And when `aws-iam-authenticator` command get trigger in the background, it need `AWS_ACCESS_KEY` and `AWS_SECRET_ACCESS_KEY` (AWS Credentials)
+
+NOTE : This part of authentication where I need the aws-iam-authenticator and setting AWS-crenditals in addition to Kubernetes Authentication it acctually specific to AWS . Other platform will have different way to authenticate
+
+Now I can try to test by Deploy Nginx like this :
+
+```
+stage("Deploy with Kubernetes") {
+  environment{
+    AWS_ACCESS_KEY_ID = credentials('Aws_Access_Key_Id')
+    AWS_SECRET_ACCESS_KEY = credentials('Aws_Secret_Access_Key')
+  }
+  steps {
+    script {
+      echo "Deploy Nginx ...."
+      sh 'kubectl create deployment nginx-deployment --image=nginx'
+    }
+  }
+}
+```
+
+Now I could see my Nginx running by using `kubectl get pods`
+
+<img width="600" alt="Screenshot 2025-04-28 at 13 35 41" src="https://github.com/user-attachments/assets/02d3c324-9320-405f-958e-cfd6826c11a8" />
+
+Next steps I will deploy my Java Application ....
 
 #### Add AWS credentials on Jenkins for AWS account authentication
 
@@ -694,7 +814,7 @@ Couple things that need for a Pipeline to deploy Image on Kubernetes :
 
    - In Jenkinsfile . I set `$IMAGE_NAME` as a ENV in the Version Incrementation Stage . Now I will also set `$APP_NAME` as a ENV in the Deploy Stage (can be in Global) by using `environment{}` blocks.
 
-My Ymal file would look like this : 
+My Yaml file would look like this : 
 
 ```
 apiVersion: apps/v1
