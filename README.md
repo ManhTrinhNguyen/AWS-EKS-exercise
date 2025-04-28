@@ -42,7 +42,22 @@
    
   - [CD Stage](#CD-Stage)
  
+    - [Install kubectl inside Jenkins Container](#Install-kubectl-inside-Jenkins-Container)
+   
+    - [Install aws-iam-authenticator tool inside Jenkins Container](#Install-aws-iam-authenticator-tool-inside-Jenkins-Container)
+   
     - [Create Secret Component AWS ECR Credentials](#Create-Secret-Component-AWS-ECR-Credentials)
+
+    - [Create Kubeconfig file to connect to EKS Cluster](#Create-Kubeconfig-file-to-connect-to-EKS-Cluster)
+
+    - [Add AWS credentials on Jenkins for AWS account authentication](Add-AWS-credentials-on-Jenkins-for-AWS-account-authentication)
+ 
+    - [Create Secret Component AWS ECR Credentials](#Create-Secret-Component-AWS-ECR-Credentials)
+   
+    - [Configure Kubernetes Deployment and Service Yaml files](#Configure-Kubernetes-Deployment-and-Service-Yaml-files)
+   
+    - [Create Deployment Stage in Jenkinsfile](#Create-Deployment-Stage-in-Jenkinsfile)
+   
   
 # AWS-EKS 
 
@@ -630,9 +645,19 @@ Go to my Pipeline Configuration -> Inside the Branch Sources I see the Build Str
 
 ### CD Stage
 
-I will setup automatic deployment to the cluster in the pipeline 
+I will setup automatic deployment in Kubernetes to the cluster in the pipeline 
+
+I need to configure a couple of Steps in order for that to work : 
+
+#### Install kubectl inside Jenkins Container
+
+#### Install aws-iam-authenticator tool inside Jenkins Container
 
 #### Create Secret Component AWS ECR Credentials
+
+#### Create Kubeconfig file to connect to EKS Cluster
+
+#### Add AWS credentials on Jenkins for AWS account authentication
 
 In this Deployment Stage I will pull Image from the ECR . In order to pull Image from ECR I need to login to ECR .
 
@@ -653,7 +678,7 @@ kubectl create secret docker-registry <my-secrect-name> \
 --docker-password=<AWS-ECR-Password> \
 ```
 
-#### Configure Kubernetes 
+#### Configure Kubernetes Deployment and Service Yaml files
 
 Couple things that need for a Pipeline to deploy Image on Kubernetes : 
 
@@ -668,7 +693,73 @@ Couple things that need for a Pipeline to deploy Image on Kubernetes :
    - Also set Apps name bcs it repeat multiple times in the file : $APP_NAME .
 
    - In Jenkinsfile . I set `$IMAGE_NAME` as a ENV in the Version Incrementation Stage . Now I will also set `$APP_NAME` as a ENV in the Deploy Stage (can be in Global) by using `environment{}` blocks.
-  
+
+My Ymal file would look like this : 
+
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: $APP_NAME
+  labels:
+    app: $APP_NAME
+spec: 
+  replicas: 2 
+  selector:
+    matchLabels:
+      app: $APP_NAME 
+  template:
+    metadata:
+      labels: 
+        app: $APP_NAME
+    spec: 
+      imagePullSecrets: 
+      - name: docker-ecr-authentication
+      containers:
+      - name: $APP-NAME
+        image: $IMAGE_NAME
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env: 
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: java-secret
+              key: DB_USER
+        - name: DB_NAME 
+          valueFrom: 
+            secretKeyRef:
+              name: java-secret
+              key: DB_NAME
+        - name: DB_SERVER
+          valueFrom:
+            configMapKeyRef:
+              name: java-configmap
+              key: database_server
+        - name: DB_PWD
+          valueFrom: 
+            secretKeyRef:
+              name: mysql
+              key: mysql-password
+
+---
+
+apiVersion: v1
+kind: Service
+metadata: 
+  name: java-app-service
+spec:
+  selector:
+    app: $APP_NAME
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+```
+
+#### Create Deployment Stage in Jenkinsfile
+
 To pass value from Jenkinsfile to Yaml file: 
 
  - I use the command line tool call Environment Subsitute `envsubst`. This command actually used to substitute any variables define inside the file (in this case Yaml file) . And the syntax this command expect is `IMAGE_NAME`
@@ -682,9 +773,6 @@ To pass value from Jenkinsfile to Yaml file:
    - Install gettext-base : apt-get install gettext-base
   
  - I pass a file to `envsubst` command `envsubst < config.yaml` . It will take that file and it will look for a syntax of `$` and name of Variable and it will try to match that name of the variable to any ENV defined in that context . Then it will create a temporary file with the values set and I will pipe that temporary file and pass it as a parameter like this : `envsubst < config.yaml | kubectl apply -f`  
-
-
-
 
 
 
