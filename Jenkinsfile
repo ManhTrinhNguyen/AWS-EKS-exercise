@@ -71,7 +71,7 @@ pipeline {
           steps {
             script {
               sh "docker push ${IMAGE_NAME}"
-              echo "Push Image Success"
+              echo "Push Image Success ..."
             }
           }
         }
