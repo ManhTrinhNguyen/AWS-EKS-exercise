@@ -33,6 +33,8 @@
     - [Docker Login](#Docker-Login)
    
     - [Push Docker Image to ECR](#Push-Docker-Image-to-ECR)
+   
+    - [Make Jenkin commit and push to Repository](#Make-Jenkin-commit-and-push-to-Repository)
   
 # AWS-EKS 
 
@@ -551,6 +553,17 @@ stage("Push Docker Image to ECR") {
   }
 }
 ```
+
+#### Make Jenkin commit and push to Repository
+
+Everytime pipeline run in Jenkins, it will create a new Image Version, the `versions.properties` in my Gradle project automatically increase, I want to make Jenkin commit and push to the Repository, so when my teammate I want use it, first they have to pull the newest code 
+
+I will add the Git commit Stage :
+
+ - I need credentials to login to Github . Now in Jenkins I will go to Dashboard Credentials and choose Username with Password 
+
+ - In order to use those credentials I will use `withCredentials([]){}` plugin to pull Username and Password from Credential
+
 
 
 
