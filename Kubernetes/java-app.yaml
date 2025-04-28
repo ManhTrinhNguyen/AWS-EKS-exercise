@@ -15,7 +15,7 @@ spec:
         app: $APP_NAME
     spec: 
       imagePullSecrets: 
-      - name: docker-ecr-authentication
+      - name: docker-authentication-ecr
       containers:
       - name: $APP-NAME
         image: $IMAGE_NAME
