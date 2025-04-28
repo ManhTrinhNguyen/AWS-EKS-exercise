@@ -78,9 +78,14 @@ pipeline {
         }
 
         stage("Deploy with Kubernetes") {
+          environment{
+            AWS_ACCESS_KEY_ID = credentials('Aws_Access_Key_Id')
+            AWS_SECRET_ACCESS_KEY = credentials('Aws_Secret_Access_Key')
+          }
           steps {
             script {
-              
+              echo "Deploy Nginx ...."
+              sh 'kubectl create deployment nginx-deployment --image=nginx'
             }
           }
         }
