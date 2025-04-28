@@ -664,6 +664,10 @@ Couple things that need for a Pipeline to deploy Image on Kubernetes :
    - To set image in Deployment file : `$IMAGE_NAME`. This is a ENV that I set in a Jenkinsfile.
   
    - Also set `imagePullPolicy : always` always set a new Image when the Pod start no matter that specific Image available in that Local
+
+   - Also set Apps name bcs it repeat multiple times in the file : $APP_NAME .
+
+   - In Jenkinsfile . I set `$IMAGE_NAME` as a ENV in the Version Incrementation Stage . Now I will also set `$APP_NAME` as a ENV in the Deploy Stage (can be in Global) by using `environment{}` blocks.
   
 To pass value from Jenkinsfile to Yaml file: 
 
