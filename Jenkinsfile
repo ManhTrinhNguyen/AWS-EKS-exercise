@@ -84,8 +84,8 @@ pipeline {
           }
           steps {
             script {
-              echo "Deploy Nginx ...."
-              sh 'kubectl create deployment nginx-deployment --image=nginx'
+              echo "Deploy Java Application ...."
+              sh "envsubst < Kubernetes/java-app.yaml | kubectl apply -f -"
             }
           }
         }
