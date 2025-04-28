@@ -651,7 +651,7 @@ I need to configure a couple of Steps in order for that to work :
 
 #### Install kubectl inside Jenkins Container
 
-#### Install aws-iam-authenticator tool inside Jenkins Container
+#### Install aws iam authenticator tool inside Jenkins Container
 
 #### Create Secret Component AWS ECR Credentials
 
