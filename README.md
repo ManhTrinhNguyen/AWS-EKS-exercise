@@ -4,6 +4,8 @@
 
 - [Deploy Java Application](#Deploy-Java-Application)
 
+  - [Kubernetes Best Practice](#Kubernetes-Best-Practice)
+
 - [Setup Continuous Deployment with Jenkins](#Setup-Continuous-Deployment-with-Jenkins)
 
   - [Create Ubuntu Server on DigitalOcean](#Create-Ubuntu-Server-on-DigitalOcean) 
@@ -270,6 +272,174 @@ I have a `CrashLoopBackOff` means:
  - To know happen I use `kubectl logs <pod-name>`
 
  - Or I can use `kubectl describe pod <pod-name>` to see events of the pod generating
+
+#### Kubernetes Best Practice
+
+**Best Practice 1: Pinned (Tag) Version for each Container Image**
+
+Define specific version for Image that I use inside the Pod
+
+If I don't specify the version tag . K8s automatically pulled the latest version . That mean the new Image get built and push to the Repo the Pod will restart and pull the latest version . It might cause break current App, unpridictable, Don't know what version running on my Cluster 
+
+**Best Practice 2: Liveness Probe for each container**
+
+<img width="600" alt="Screenshot 2025-02-28 at 12 38 44" src="https://github.com/user-attachments/assets/394985be-0327-4bdf-aa9a-096e019ef3db" />
+
+Kubernetes has a intelligent managing its resources . Restart pod when it crashed 
+
+But what if the container inside the pod crashed or stucked in the loop ? 
+
+To let Kubernetes know wheather the Application inside the pod is running : Perform Health check with `Liveness Probe` . 
+
+With `Liveness Probe` Kubernetes will restart the Pod if the Application has issues 
+
+Bcs I don't have http `/heath` route in my App I can do `tcpSocket` checks if the port is open (i.e., app is still accepting TCP connections).
+
+```
+livenessProbe:
+  tcpSocket:
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 10
+```
+
+**Best Practice 3 : Readness Probe for each container**
+
+K8s manage its resources but not Container . Liveness Probe is the way to check that the Container running or crashing
+
+LivenessProbe is check while the container running . RedinessProbe is check during it start up
+
+```
+readinessProbe:
+  tcpSocket:
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 10 
+```
+
+**Best Practice 4 : Resources Limit for each container**
+
+Why Resources Limit important ?
+
+What if Applications need more Resources ? What if when the Application is running need more Resources than Requested ? Bcs if 1 Application can have too much data that it need to load into memory or Application has a bug inside with some infinite loop and start consuming all the CPU available on that Node
+
+If not limited , container could take all the Resources of that Node
+
+  ----Configure resources limits for each container----
+
+!!! NOTE : If I put values larger than my biggest Node resources, my Pod will never be schedule
+
+```
+resources:
+  limits:
+    cpu: 100m
+    memory: 200Mi
+```
+
+**Best Practice 5 : Resources Request for each container**
+
+I need to define for each container something called resource requests . Some Application may need more CPU or RAM than other
+
+To make sure my Application Container has enough resources to run inside the Pod , I should define Resources Request for that Container
+
+m = milicores
+
+Mi = mebibyte
+
+**Best Practice 6: Don't Expose NodePort**
+
+Even Though using NodePort super easy bcs it expose Cluster Security Risk . Bcs it opened ports on each Worker Node . So have multiple entry point in the cluster . So 
+I increase the attack surface
+
+The Best Pratice is only use Internal Services (Cluster IP) and have 1 only 1 entry point to that Service . And ideally that entry point should be sit outside the cluster on a seperate server
+
+Intead of using NodePort I can use LoadBalancer Type which use the CLoud platform's Load balancer to create an external single entry point for the cluster
+
+So Load Balancer will get all the request from Browser or from external resources to Application
+
+And the Alternative I can use Ingress Controller to direct traffice to internal Services 
+
+**Best Practice 7: More than 1 Replica for Deployment**
+
+If 1 Pod crashes, my application is not accessible until new Pods restart !
+
+By Increasing Replicas, make sure even if 1 replica die Application alway remain available
+
+Always Available | No downtime for users
+
+**Best Practice 8: More than 1 Worker Node in the Cluster**
+
+Alway use more than 1 Worker Node
+If something happen to a Node all my Application are gone, stopped and not accessible
+
+Especially if i want to run multiple Replica of my Pods, ideally I want each replica to run on the different Node and not all the Replicas run on the same Node . That doesn't give me that much backup if something happen to Node itself
+
+  ----Some reason it happen----
+Server crashes
+Server reboot bcs of an update
+Server maintance
+Server Broken 
+
+**Best Practice 9 : Using Label**
+
+Use labels for all Resources
+Labeling all my Kubernetes Component
+
+Labels are key value pair
+
+Attach to K8 component like Pod, Service, Deployment ...
+
+Labeling Component is custom identifier for my Component .
+
+Should be meaningful and relevant to user
+
+Label to Group Pods base on Application they belong to and then refencing them in Service Component
+
+Best Practice is to label all Resources 
+
+**Best Practice 10 : User Namepsaces to isolate resources**
+
+Logicly grouping Application and other component into namespace make manging my cluster way easier compared to just throwing the Pod and Service everywhere in the Cluster 
+
+Also For defining diffent priviledges inside the cluster base on the Namespace | I can have multiple team working on the same cluster but each one working on different Namspace
+
+----Namespace Permission----
+
+Role 
+
+RoleBinding 
+
+And This totally up to the team how they decide to group and separate application in namespaces . I can have 1 Microservice per Namespace as well 
+
+**Best Practice 11 : Ensure Image are free vulnerablility**
+
+This can happen when I using library or tools that have some vulnerabiliti for my Application inside the container
+
+Mannually scan vulnerability on Images
+
+Or Automated scan on the Build Pipelines
+
+**Best Practice 12 : No Root access for Container**
+
+Making sure that I don't have container running in my Cluster that have root access capability
+
+This exposed security risk bcs a container with root access can access more resources and do much more on the host where it is running
+
+If the container is hacked, much more damage can be done
+
+So best practice is having none Root user in the container
+
+Most of officical Images Do Not use root user however if I use non-official third party Images . Alway a good practice to check
+
+**Best Practice 3 : Update K8 to latest version**
+
+Important Security Fixed
+
+Bug fixed
+
+----Update K8 Version Node by Node----
+
+To avoild Application downtime 
 
 ## Setup Continuous Deployment with Jenkins
 
