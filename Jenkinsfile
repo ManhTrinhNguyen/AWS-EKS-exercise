@@ -85,7 +85,7 @@ pipeline {
           steps {
             script {
               echo "Deploy Java Application "
-              sh "envsubst < Kubernetes/java-app.yaml | kubectl apply -f -"
+              sh "envsubst < charts/values/java-gradle-values.yaml | helm upgrade --install ${APP_NAME} ./charts/java-gradle-deployment -f -"
             }
           }
         }

@@ -1,13 +1,13 @@
 # Deployment and Service
-AppName: java-app
+AppName: $APP_NAME
 ServiceName: java-app-service
 ReplicasCount: 2
-ImagePullSecretName: registry-name
-ImageName: image
+ImagePullSecretName: docker-authenticate-ecr
+ImageName: $IMAGE_NAME
 ContainerPort: 8080
 ServicePort: 8080
 
-InitialDelaySeconds: 5
+InitialDelaySeconds: 10
 PeriodSeconds: 5
 
 RequestCPU: 100m
@@ -18,10 +18,13 @@ LimitMemory: 200Mi
 regularENV: {}
 
 secretName: java-secret
-secretData: {}
+secretData: 
+  DB_USER: dGlt
+  DB_NAME: bXktYXBwLWRi
 
 configMapName: java-config 
-configData: {}
+configData: 
+  database_server: "mysql-primary-0.mysql-primary-headless"
 
 ingressName: java-ingress
 ingressHost: hostURL
