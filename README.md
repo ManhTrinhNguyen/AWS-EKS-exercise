@@ -25,6 +25,12 @@
   - [Create Secret Yaml File](#Create-Secret-Yaml-File)
  
   - [Create Ingress Yaml File](#Create-Ingress-Yaml-File)
+ 
+  - [Create Values file](#Create-Values-file)
+ 
+  - [Deploy my Helm Chart](#Deploy-my-Helm-Chart)
+ 
+  - [Deploy with Helmfile](#Deploy-with-Helmfile)
 
 - [Setup Continuous Deployment with Jenkins](#Setup-Continuous-Deployment-with-Jenkins)
 
@@ -738,6 +744,84 @@ I will create my own values.yaml file usally outside the Chart itself
 For example : for emailService Mircro I will create `emailservce-values.yaml`
 
 From Default values file to valid `emailservice` value file
+
+This `values.yaml` is just for reference . I will create another Value file that have correct value to override this 
+
+```
+# Deployment and Service
+AppName: java-app
+ServiceName: java-app-service
+ReplicasCount: 2
+ImagePullSecretName: registry-name
+ImageName: image
+ContainerPort: 8080
+ServicePort: 8080
+
+InitialDelaySeconds: 5
+PeriodSeconds: 5
+
+RequestCPU: 100m
+RequestMemory: 64Mi
+LimitCPU: 100m
+LimitMemory: 200Mi
+
+regularENV: {}
+
+secretName: java-secret
+secretData: {}
+
+configMapName: java-config 
+configData: {}
+
+ingressName: java-ingress
+ingressHost: hostURL
+```
+
+#### Deploy my Helm Chart
+
+To validate that my template Yaml file and the values that I define are correct : `helm template -f <value-file> <name-of-helm-chart>` . This give me a nice preview from all the values sources of that value-file
+
+The way it work in the background is : When Helm evaluate a Chart, It will send all the template files that are defined in the templates Directory through Helm's template rendering engine, Engine will then replace all the Variable or Placeholder in those Template File with the actual Values from the Values resources which are User Provided Values File or --set option (For singular value), Helm will then collect the result of those templates and send those file to Kubernetes when I execute `helm install` command
+
+ Another way to reviewing my manifest file is : `helm install --dry-run <redis-values-file> <release-name> <chart-file>`, Check generated manifest without install the chart
+
+Now I can install Helm Chart : `helm install -f <acutal-values-yaml-file> <application-name> <chart-name> --namespace <namespace>`
+
+#### Deploy with Helmfile
+
+Helmfile help me manage and deploy multiple Helm Charts
+
+If you have:
+
+ - Multiple services (apps, databases, monitoring tools, etc.)
+
+ - Multiple environments (dev, staging, prod)
+
+ - Complex values.yaml overrides
+
+ - Secrets and configuration scattered across teams
+
+Install helmfile on MacOS: `brew install helmfile`
+
+After helmfile install I can use helmfile command to update the cluster or sync the cluster with whatever I have declare in our Helmfile
+
+`helmfile sync`: Preparing all the releases . It will then compare the actual State in the cluster with the desired state that I configured in the Helmfile. Base on that it will plan what need to be install and deployed in the cluster to give me a desired State
+
+`helmfile list`: Which show me at any point the currently installed released that Helmfile manage for me
+
+`helmfile destroy`: Uninstall Release
+
+My helmfile would look like : 
+
+```
+releases:
+- name: java-gradle-app
+  chart: charts/java-gradle-deployment
+  values:
+    - values/java-gradle-values.yaml
+```
+
+If I have multiple charts It would be a good practice to deploy Helm Charts by using helmfile
 
 ----
 
