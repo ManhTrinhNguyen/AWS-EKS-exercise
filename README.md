@@ -22,7 +22,9 @@
  
   - [Create ConfigMap Yaml File](#Create-ConfigMap-Yaml-File)
  
-  - [Create Secret Yaml File](#Create-Secret-Yaml-File )
+  - [Create Secret Yaml File](#Create-Secret-Yaml-File)
+ 
+  - [Create Ingress Yaml File](#Create-Ingress-Yaml-File)
 
 - [Setup Continuous Deployment with Jenkins](#Setup-Continuous-Deployment-with-Jenkins)
 
@@ -702,6 +704,42 @@ data:
   {{ $key }}: {{ $value }}
   {{- end }}
 ```
+
+#### Create Ingress Yaml File 
+
+```
+apiVersion: networking.k8s.io/v1
+kind: Ingress 
+metadata: 
+  name: {{ .Values.ingressName }}
+spec:
+  ingressClassName: nginx 
+  rules: 
+  - host: {{ .Values.ingressHost }}
+    http: 
+      paths: 
+      - path: / 
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.ServiceName }}
+            port:
+              number: {{ .Values.ServicePort }}
+```
+
+#### Create Values file 
+
+Places to define default value is in `values.yaml`
+
+What if I want to set the actual valid value instead of default one ? I will using the custom value file
+
+I will create my own values.yaml file usally outside the Chart itself
+
+For example : for emailService Mircro I will create `emailservce-values.yaml`
+
+From Default values file to valid `emailservice` value file
+
+----
 
 ## Setup Continuous Deployment with Jenkins
 
