@@ -21,6 +21,7 @@ secretName: java-secret
 secretData: 
   DB_USER: dGlt
   DB_NAME: bXktYXBwLWRi
+  DB_PWD: bXlwYXNzd29yZA==
 
 configMapName: java-config 
 configData: 

@@ -106,7 +106,7 @@ pipeline {
 
                 sh "git add ."
                 sh 'git commit -m "ci: version bump"'
-                sh 'git push origin HEAD:main'
+                sh 'git push origin HEAD:Create-Helm-Chart-For-Java-App'
               }
             }
           }
