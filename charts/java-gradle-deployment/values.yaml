@@ -1,0 +1,27 @@
+# Deployment and Service
+AppName: java-app
+ServiceName: java-app-service
+ReplicasCount: 2
+ImagePullSecretName: registry-name
+ImageName: image
+ContainerPort: 8080
+ServicePort: 8080
+
+InitialDelaySeconds: 5
+PeriodSeconds: 5
+
+RequestCPU: 100m
+RequestMemory: 64Mi
+LimitCPU: 100m
+LimitMemory: 200Mi
+
+regularENV: {}
+
+secretName: java-secret
+secretData: {}
+
+configMapName: java-config 
+configData: {}
+
+ingressName: java-ingress
+ingressHost: hostURL

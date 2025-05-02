@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.AppName }}
+  labels:
+    app: {{ .Values.AppName }}
+spec: 
+  replicas: {{ .Values.ReplicasCount }} 
+  selector:
+    matchLabels:
+      app: {{ .Values.AppName }}
+  template:
+    metadata:
+      labels: 
+        app: {{ .Values.AppName }}
+    spec: 
+      imagePullSecrets: 
+      - name: {{ .Values.ImagePullSecretName }}
+      containers:
+      - name: {{ .Values.AppName }}
+        image: {{ .Values.ImageName }}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: {{ .Values.ContainerPort }}
+        livenessProbe:
+          tcpSocket:
+            port: {{ .Values.ContainerPort }}
+          initialDelaySeconds: {{ .Values.InitialDelaySeconds }}
+          periodSeconds: {{ .Values.PeriodSeconds }}
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.ContainerPort }}
+          initialDelaySeconds: {{ .Values.InitialDelaySeconds }}
+          periodSeconds: {{ .Values.PeriodSeconds }}
+        resources:
+          requests:
+            cpu: {{ .Values.RequestCPU }}
+            memory: {{ .Values.RequestMemory }}
+          limits:
+            cpu: {{ .Values.LimitCPU }}
+            memory: {{ .Values.LimitMemory }}
+        env: 
+        # Loop through Regular ENV data 
+        {{- range $key, $value := .Values.regularENV }}
+        - name: {{ $key }}
+          value: {{ $value | quote }}
+        {{- end }}
+
+        # Loop through Secret
+        {{- range $key, $value := .Value.secretData }}
+        - name: {{ $key }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ $.Values.secretName }}
+              key: {{ $key }}
+        {{- end}}
+
+        # Loop through Configmap 
+        {{- range $key, $value := .Value.configData }}
+        - name: {{ $key }}
+          valueFrom:
+            configMapKeyRef:
+              name: {{ $.Values.configMapName }}
+              key: {{ $key }}
+        {{- end }}
+
+      
