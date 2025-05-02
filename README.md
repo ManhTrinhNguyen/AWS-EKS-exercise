@@ -273,7 +273,7 @@ I have a `CrashLoopBackOff` means:
 
  - Or I can use `kubectl describe pod <pod-name>` to see events of the pod generating
 
-#### Kubernetes Best Practice
+### Kubernetes Best Practice
 
 **Best Practice 1: Pinned (Tag) Version for each Container Image**
 
