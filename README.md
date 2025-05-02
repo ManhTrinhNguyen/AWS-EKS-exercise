@@ -5,6 +5,24 @@
 - [Deploy Java Application](#Deploy-Java-Application)
 
   - [Kubernetes Best Practice](#Kubernetes-Best-Practice)
+ 
+- [Deploy Ingress Controller by using Helm](#Deploy-Ingress-Controller-by-using-Helm)
+
+- [Define Ingress Rule](#Define-Ingress-Rule)
+
+- [Create Helm chart for Java App](#Create-Helm-chart-for-Java-App)
+
+  - [To create Helm chart](#To-create-Helm-chart)
+ 
+  - [Create Deployment Yaml file](#Create-Deployment-Yaml-file)
+
+    - [Use Range to dynamically get ENV data](#Use-Range-to-dynamically-get-ENV-data)
+   
+  - [Create Service YAML file](#Create-Service-YAML-file)
+ 
+  - [Create ConfigMap Yaml File](#Create-ConfigMap-Yaml-File)
+ 
+  - [Create Secret Yaml File](#Create-Secret-Yaml-File )
 
 - [Setup Continuous Deployment with Jenkins](#Setup-Continuous-Deployment-with-Jenkins)
 
@@ -273,6 +291,7 @@ I have a `CrashLoopBackOff` means:
 
  - Or I can use `kubectl describe pod <pod-name>` to see events of the pod generating
 
+
 ### Kubernetes Best Practice
 
 **Best Practice 1: Pinned (Tag) Version for each Container Image**
@@ -431,7 +450,7 @@ So best practice is having none Root user in the container
 
 Most of officical Images Do Not use root user however if I use non-official third party Images . Alway a good practice to check
 
-**Best Practice 3 : Update K8 to latest version**
+**Best Practice 13 : Update K8 to latest version**
 
 Important Security Fixed
 
@@ -440,6 +459,249 @@ Bug fixed
 ----Update K8 Version Node by Node----
 
 To avoild Application downtime 
+
+## Define Ingress Rule
+
+Ingress is an abstract Component in the Cluster . It provide the Routing rules http/https to manage the redirection . Manage which request redirect to which Pod
+
+Create Ingress yaml 
+
+```
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: java-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: 45-79-231-7.ip.linodeusercontent.com # I use this for host because I don't have a domain name . For test purposes
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: java-app-service
+            port:
+              number: 8080
+```
+
+## Deploy Ingress Controller by using Helm
+
+Ingress controller is another Component in the Cluster to evaluate all the Rules that I defined in the Cluster . That way to manage the Redirection
+
+Ingress Controller use cloud native in the background . So whenever I installed Ingress Controller my Cloud Loadbalancer automatic created
+
+Step 1 : Install helm : `brew install helm`
+
+Step 2 : Add Nginx Repo : `helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx`
+
+Step 3 : Install Ingress controller from Nginx Repo : `helm install <release-name> ingress-nginx/ingress-nginx --set controller.publishService.enabled=true`
+
+ - `--set controller.publishService.enabled=true` : This attribute to make sure that we are automatically allocated the Public IP for my Ingress Address to use with Nginx
+
+Step 4 : To check Ingress Controller is running : 
+
+ - `kubectl get pods` to see the Ingress controller pod
+
+ - `kubectl get svc` to see Ingress Controller Services
+
+##  Create Helm chart for Java App
+
+I will create new branch for this : `git checkout -b Create-Helm-Chart-For-Java-App`
+
+Helm Chart is a bundle of Yaml file
+
+When I deploy an App with those Configuration Yaml file I can bundle it for the next use 
+
+I will create `charts` folder : `mkdir charts`
+
+#### To create Helm chart 
+
+Inside `charts` folder : `helm create <helm-chart-name>`
+
+#### Create Deployment Yaml file 
+
+Instead of hardcode Values I use syntax for dynamically Values : `{{.Values.<name-of-the-value>}}`
+
+#### Use Range to dynamically get ENV data
+
+For 1 single ENV I can have container ENV like this: 
+
+```
+env:
+- name : {{ .Values.containerEnvVar.key }}
+  value : {{ .Values.containerEnvVar.value }}
+```
+
+For working with List of something . In this case ENV, Helm has built function call `Range`
+
+`Range` is basically loop through a List give me a Element one by one
+
+```
+env: 
+# Loop through Regular ENV data 
+{{- range $key, $value := .Values.regularENV }} ## .Values.regularENV This is list of ENV data I defined in `Values` file
+- name: {{ $key }}
+  value: {{ $value | quote }}
+{{- end }}
+```
+
+Loop through Secrect and Configmap data 
+
+```
+# Loop through Secret
+env:
+{{- range $key, $value := .Value.secretData }}
+- name: {{ $key }}
+  valueFrom:
+    secretKeyRef:
+      name: {{ $.Values.secretName }}
+      key: {{ $key }}
+{{- end}}
+
+# Loop through Configmap 
+{{- range $key, $value := .Value.configData }}
+- name: {{ $key }}
+  valueFrom:
+    configMapKeyRef:
+      name: {{ $.Values.configMapName }}
+      key: {{ $key }}
+{{- end }}
+```
+
+!!! NOTE : Inside the `secretKeyRef` at the `name: {{name: $.Values.secretName }}` level . The `$` is for global scope . Bcs if I don't define `$` the scope would be inside the `.Value.secretData` . The same for `configMapKeyRef`
+
+The values file should look like this : 
+
+```
+secretName: java-secret
+secretData: 
+  DB_USER: dGlt
+  DB_NAME: bXlfZGF0YWJhc2U=
+  DB_PWD: cGFzc3dvcmQ=
+
+configName: java-config 
+configData: 
+  DB_SERVER: mysql-primary-0.mysql-primary-headless
+```
+
+My Deployment YAML file would look like this : 
+
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.AppName }}
+  labels:
+    app: {{ .Values.AppName }}
+spec: 
+  replicas: {{ .Values.ReplicasCount }} 
+  selector:
+    matchLabels:
+      app: {{ .Values.AppName }}
+  template:
+    metadata:
+      labels: 
+        app: {{ .Values.AppName }}
+    spec: 
+      imagePullSecrets: 
+      - name: {{ .Values.ImagePullSecretName }}
+      containers:
+      - name: {{ .Values.AppName }}
+        image: {{ .Values.ImageName }}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: {{ .Values.ContainerPort }}
+        livenessProbe:
+          tcpSocket:
+            port: {{ .Values.ContainerPort }}
+          initialDelaySeconds: {{ .Values.InitialDelaySeconds }}
+          periodSeconds: {{ .Values.PeriodSeconds }}
+        readinessProbe:
+          tcpSocket:
+            port: {{ .Values.ContainerPort }}
+          initialDelaySeconds: {{ .Values.InitialDelaySeconds }}
+          periodSeconds: {{ .Values.PeriodSeconds }}
+        resources:
+          requests:
+            cpu: {{ .Values.RequestCPU }}
+            memory: {{ .Values.RequestMemory }}
+          limits:
+            cpu: {{ .Values.LimitCPU }}
+            memory: {{ .Values.LimitMemory }}
+        env: 
+        # Loop through Regular ENV data 
+        {{- range $key, $value := .Values.regularENV }}
+        - name: {{ $key }}
+          value: {{ $value | quote }}
+        {{- end }}
+
+        # Loop through Secret
+        {{- range $key, $value := .Value.secretData }}
+        - name: {{ $key }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ $.Values.secretName }}
+              key: {{ $key }}
+        {{- end}}
+
+        # Loop through Configmap 
+        {{- range $key, $value := .Value.configData }}
+        - name: {{ $key }}
+          valueFrom:
+            configMapKeyRef:
+              name: {{ $.Values.configMapName }}
+              key: {{ $key }}
+        {{- end }}
+```
+
+#### Create Service YAML file
+
+```
+apiVersion: v1
+kind: Service
+metadata: 
+  name: {{ .Values.ServiceName }}
+spec:
+  selector:
+    app: {{ .Values.AppName }}
+  ports:
+  - protocol: TCP
+    port: {{ .Values.ServicePort }}
+    targetPort: {{ .Values.ContainerPort }}
+```
+
+#### Create ConfigMap Yaml File 
+
+I also use `Range` to loop the List of ConfigMap Data. In case I have multiple Data 
+
+```
+apiVersion: v1
+kind: ConfigMap
+metadata: 
+  name: {{ $.Values.configMapName }}
+data:
+  {{- range $key, $value := .Value.configData }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+```
+
+#### Create Secret Yaml File 
+
+I also use `Range` to loop the List of Secret Data. In case I have multiple Data 
+
+```
+apiVersion: v1
+kind: Secret
+metadata: 
+  name: {{ $.Values.secretName }}
+type: Opaque
+data:
+  {{-range $key, $value := .Value.secretData}}
+  {{ $key }}: {{ $value }}
+  {{- end }}
+```
 
 ## Setup Continuous Deployment with Jenkins
 
