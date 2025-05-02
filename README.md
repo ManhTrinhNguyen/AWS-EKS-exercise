@@ -85,6 +85,8 @@
     - [Configure Kubernetes Deployment and Service Yaml files](#Configure-Kubernetes-Deployment-and-Service-Yaml-files)
    
     - [Create Deployment Stage in Jenkinsfile](#Create-Deployment-Stage-in-Jenkinsfile)
+   
+    - [Create Deployment Stage and Deploy with HelmChart in Jenkinsfile](#Create-Deployment-Stage-and-Deploy-with-HelmChart-in-Jenkinsfile)
 
 - [Configure Autoscaling for EKS Cluster](#Configure-Autoscaling-for-EKS-Cluster)
 
@@ -1476,6 +1478,91 @@ stage("Deploy with Kubernetes") {
   }
 }
 ```
+
+#### Create Deployment Stage and Deploy with HelmChart in Jenkinsfile 
+
+First I need to install helm inside my Jenkin container 
+
+ - SSH to a server where a Jenkins container is running : `ssh -i ~/.ssh/id_rsa root@<ip-address>`
+
+ - Go inside Jenkins container : `docker exec -it -u 0 <container-id> bash`
+
+ - To check the Linux Distribution of my Container : `cat /etc/os-release`
+
+ - To install Helm Chart on Debian GNU/Linux
+
+  ```
+  # 1. Install required dependencies
+  apt update && apt install -y curl gnupg
+  
+  # 2. Add Helm GPG key
+  curl https://baltocdn.com/helm/signing.asc | gpg --dearmor -o /usr/share/keyrings/helm.gpg
+  
+  # 3. Add Helm apt repository
+  echo "deb [signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" \
+    | tee /etc/apt/sources.list.d/helm-stable-debian.list
+  
+  # 4. Update apt and install helm
+  apt update && apt install -y helm
+  
+  # 5. Verify installation
+  helm version
+  ```
+
+Now I will configure my acutal `values.yaml` files 
+
+```
+# Deployment and Service
+AppName: $APP_NAME
+ServiceName: java-app-service
+ReplicasCount: 2
+ImagePullSecretName: docker-authenticate-ecr
+ImageName: $IMAGE_NAME
+ContainerPort: 8080
+ServicePort: 8080
+
+InitialDelaySeconds: 10
+PeriodSeconds: 5
+
+RequestCPU: 100m
+RequestMemory: 64Mi
+LimitCPU: 100m
+LimitMemory: 200Mi
+
+regularENV: {}
+
+secretName: java-secret
+secretData: 
+  DB_USER: dGlt
+  DB_NAME: bXktYXBwLWRi
+
+configMapName: java-config 
+configData: 
+  database_server: "mysql-primary-0.mysql-primary-headless"
+
+ingressName: java-ingress
+ingressHost: hostURL
+```
+
+Now I configure in my Deploy Stage 
+
+```
+stage("Deploy with Kubernetes") {
+  environment{
+    AWS_ACCESS_KEY_ID = credentials('Aws_Access_Key_Id')
+    AWS_SECRET_ACCESS_KEY = credentials('Aws_Secret_Access_Key')
+    APP_NAME = "java-app"
+  }
+  steps {
+    script {
+      echo "Deploy Java Application "
+      sh "envsubst < charts/values/java-gradle-values.yaml | helm upgrade --install ${APP_NAME} ./charts/java-gradle-deployment -f -"
+    }
+}
+```
+
+`helm upgrade --install ${APP_NAME} ./charts/java-gradle-deployment -f -`: This command mean if the release ${APP_NAME} doesn't exist yet . It will be installed . If the release already exists → it will be updated/upgraded with new values or image versions.
+
 
 ## Configure Autoscaling for EKS Cluster
 
