@@ -1521,7 +1521,7 @@ ImageName: $IMAGE_NAME
 ContainerPort: 8080
 ServicePort: 8080
 
-InitialDelaySeconds: 10
+InitialDelaySeconds: 50 # NOTE !!! : Java App may take 30s to start . I will delay my rediness prope and liveness prope to 50s 
 PeriodSeconds: 5
 
 RequestCPU: 100m
