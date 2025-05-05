@@ -1108,6 +1108,8 @@ I need to configure AWS ECR credentials on in Jenkins :
 
  - Now in Jenkins I will go to Dashboard Credentials and choose Username with Password
 
+ - !!! NOTE : AWS Credentails only available 12 hours. I have to re-generate a new one after 12 hours
+
 In order to use those credentials I will use `withCredentials([]){}` plugin to pull Username and Password from Credential
 
 The Code would look like this : 
