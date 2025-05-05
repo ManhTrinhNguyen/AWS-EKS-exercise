@@ -1,3 +1,5 @@
+- [Create EKS Cluster](#Create-EKS-Cluster)
+  
 - [Deploy Mysql](#Deploy-Mysql)
 
 - [Deploy Mysql for Production](#Deploy-Mysql-for-Production)
@@ -103,6 +105,8 @@
 # AWS-EKS 
 
 ## Create EKS Cluster . 
+
+I have created EKS Cluster by using Terraform in this Repository (https://github.com/ManhTrinhNguyen/Terraform-Exercise) 
 
 #### Connect kubectl locally with EKS Cluster
 
