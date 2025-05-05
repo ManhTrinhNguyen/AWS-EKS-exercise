@@ -22,16 +22,16 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: {{ .Values.ContainerPort }}
-        livenessProbe:
-          tcpSocket:
-            port: {{ .Values.ContainerPort }}
-          initialDelaySeconds: {{ .Values.InitialDelaySeconds }}
-          periodSeconds: {{ .Values.PeriodSeconds }}
-        readinessProbe:
-          tcpSocket:
-            port: {{ .Values.ContainerPort }}
-          initialDelaySeconds: {{ .Values.InitialDelaySeconds }}
-          periodSeconds: {{ .Values.PeriodSeconds }}
+        # livenessProbe:
+        #   tcpSocket:
+        #     port: {{ .Values.ContainerPort }}
+        #   initialDelaySeconds: {{ .Values.InitialDelaySeconds }}
+        #   periodSeconds: {{ .Values.PeriodSeconds }}
+        # readinessProbe:
+        #   tcpSocket:
+        #     port: {{ .Values.ContainerPort }}
+        #   initialDelaySeconds: {{ .Values.InitialDelaySeconds }}
+        #   periodSeconds: {{ .Values.PeriodSeconds }}
         resources:
           requests:
             cpu: {{ .Values.RequestCPU }}
