@@ -25,7 +25,7 @@ secretData:
 
 configMapName: java-config 
 configData: 
-  database_server: "mysql-primary-0.mysql-primary-headless"
+  database_server: mysql-primary-0.mysql-primary-headless
 
 ingressName: java-ingress
 ingressHost: a9062ded7d7d74541a1add61ff9f7064-1829948278.us-west-1.elb.amazonaws.com
