@@ -7,7 +7,7 @@ ImageName: image
 ContainerPort: 8080
 ServicePort: 8080
 
-InitialDelaySeconds: 5
+InitialDelaySeconds: 50
 PeriodSeconds: 5
 
 RequestCPU: 100m
