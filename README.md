@@ -1,3 +1,5 @@
+- [Project Overview](#Project-Overview)
+
 - [Create EKS Cluster](#Create-EKS-Cluster)
   
 - [Deploy Mysql](#Deploy-Mysql)
@@ -103,6 +105,54 @@
   - [Deploy Cluster Autoscaler](#Deploy-Cluster-Autoscaler)
   
 # AWS-EKS 
+
+## Project Overview
+
+This project demonstrates a **complete CI/CD pipeline** integrated with **AWS EKS (Elastic Kubernetes Service)**, **Auto-Scaling**, **Terraform**, **Jenkins**, and **Docker**. It showcases how to automate everything from infrastructure provisioning to containerized application deployment using scalable cloud-native architecture.
+
+---
+
+#### 🎯 Objectives
+
+- Provision EKS cluster and infrastructure using Terraform (VPC, Subnets, Security Groups, IAM, ECR).
+- Implement a multi-branch Jenkins pipeline for CI/CD.
+- Automatically build and push Docker images to AWS ECR.
+- Deploy to EKS using dynamic Helm chart or kubectl apply.
+- Enable Kubernetes Auto Scaling (Node Group + HPA).
+- Manage Terraform remote state in S3 with versioning.
+
+---
+
+#### 🔧 Tech Stack
+
+| Category               | Tools & Services                                 |
+|------------------------|--------------------------------------------------|
+| Infrastructure as Code | Terraform, AWS (EKS, EC2, IAM, S3, ECR)          |
+| CI/CD                  | Jenkins (Pipeline + Shared Libraries)            |
+| Containerization       | Docker, Kubernetes                               |
+| App Build Tool         | Gradle                                           |
+| Secrets Management     | Jenkins Credentials, environment injection       |
+| Monitoring             | Horizontal Pod Autoscaler (HPA), Cluster Autoscaler |
+| GitOps Trigger         | Webhooks & Multibranch Pipeline                  |
+
+---
+
+#### Key Features
+
+✅ Terraform modules for VPC, EKS, and IAM roles
+
+✅ Remote backend (S3) with state locking and versioning
+
+✅ Jenkins pipeline with dynamic versioning via Gradle
+
+✅ Secure image push to ECR using Jenkins credentials
+
+✅ Auto Scaling enabled with Kubernetes metrics
+
+✅ Multi-branch pipeline with webhook triggers
+
+✅ Post-deployment container orchestration on EKS
+
 
 ## Create EKS Cluster . 
 
