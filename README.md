@@ -119,7 +119,6 @@ This project demonstrates a **complete CI/CD pipeline** integrated with **AWS EK
 - Automatically build and push Docker images to AWS ECR.
 - Deploy to EKS using dynamic Helm chart or kubectl apply.
 - Enable Kubernetes Auto Scaling (Node Group + HPA).
-- Manage Terraform remote state in S3 with versioning.
 
 ---
 
