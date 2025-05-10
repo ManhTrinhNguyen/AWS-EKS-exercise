@@ -1873,10 +1873,10 @@ This is for patch version only .
 In `vars/Increment_Gradle_Version.groovy` : 
 
 ```
-def call (String ECR_REPO) {
+def call (String Update_Version) {
   echo "Increment App Version"
 
-  sh "gradle patchVersionUpdate"
+  sh "gradle ${Update_Version}"   // To Increase Major Version : gradle majorVersionUpdate,  To Increase Minor Version : gradle minorVersionUpdate , To Increase Patch Version : gradle patchVersionUpdate
 
   def version = readProperties(file: 'version.properties')
 
@@ -1885,6 +1885,8 @@ def call (String ECR_REPO) {
   echo "${env.IMAGE_NAME}"
 }
 ```
+
+Bcs ${ECR_REPO} is in my Global Environment Variable so I don't need to set it as a Parameter 
 
 
 
