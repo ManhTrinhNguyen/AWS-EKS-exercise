@@ -115,6 +115,12 @@
   - [Use Share Library in Jenkinfile](#Use-Share-Library-in-Jenkinfile)
  
   - [Increment Gradle Version](#Increment-Gradle-Version)
+ 
+  - [Build Gradle Jar](#Build-Gradle-Jar)
+ 
+  - [Build Docker Image](#Build-Docker-Image)
+ 
+  - [Docker Login to ECR](#Docker-Login-to-ECR)
   
 # AWS-EKS 
 
@@ -1907,6 +1913,86 @@ stage("Version Increment Dynamic"){
     }
 }
 ```
+
+#### Build Gradle Jar
+
+I will create a new file `vars/Build_Gradle_Jar.groovy`. Then I will extract a build Jar logic into that function 
+
+```
+def call(){
+  echo "Build Gradle Jar ...."
+
+  sh 'gradle clean build'
+}
+```
+
+Now I have a Build Gradle Jar function I can use it in my Jenkinfile like this : 
+
+```
+stage("Build Jar") {
+  steps {
+    script {
+      Build_Gradle_Jar()
+    }
+  }
+}
+```
+
+#### Build Docker Image 
+
+I will create a new file `vars/Docker_Build_Image.groovy`. Then I will extract a Docker Image logic into that function 
+
+```
+#!/user/bin/env groovy
+
+def call () {
+  echo "Build Docker Image ...."
+
+  sh "docker build -t ${env.IMAGE_NAME} ."
+}
+```
+
+Then I can use Docker_Build Image like this : 
+
+```
+stage("Build Docker Image") {
+  steps {
+    script {
+      Docker_Build_Image()
+    }
+  }
+}
+```
+
+#### Docker Login to ECR 
+
+I will create a new file `vars/Docker_Login_ECR.groovy`. Then I will extract a Docker Image Logic into that function 
+
+```
+withCredentials([usernamePassword(credentialsId: 'AWS_Credential', usernameVariable: 'USER', passwordVariable: 'PWD')]){
+  sh "echo ${PWD} | docker login --username ${USER} --password-stdin ${ECR_URL}"
+  
+  echo "Login successfully"
+}
+```
+
+I don't need to pass `${ECR_URL}` as a Parameter bcs it is already in my Global ENV 
+
+Then I can use `Docker_Login_ECR` function in my Jenkinsfile like this: 
+
+```
+stage("Login to ECR") {
+  steps {
+    script {
+      Docker_Login_ECR()
+    }
+  }
+}
+```
+
+
+
+
 
 
 
