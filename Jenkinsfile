@@ -76,7 +76,7 @@ pipeline {
         stage("Commit to Git") {
           steps {
             script {
-              echo "${BRANCH_NAME}"
+              Commit_to_Git_Repo()
             }
           }
         }
