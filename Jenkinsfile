@@ -1,9 +1,9 @@
-// library identifier: 'jenkins-shared-library@main', retriever: modernSCM(
-//     [$class: 'GitSCMSource',
-//      remote: 'https://github.com/ManhTrinhNguyen/Share_Library_Exercise.git',
-//      credentialsId: 'Github_Credential'
-//     ]
-// )
+library identifier: 'jenkins-shared-library@main', retriever: modernSCM(
+    [$class: 'GitSCMSource',
+     remote: 'https://github.com/ManhTrinhNguyen/Share_Library_Exercise.git',
+     credentialsId: 'Github_Credential'
+    ]
+)
 
 pipeline {   
     agent any
@@ -19,7 +19,7 @@ pipeline {
     stages {
         stage("Version Increment Dynamic"){
             steps {
-                Increment_Version_Gradle("patchVersionUpdate")
+                Increment_Version_Gradle "patchVersionUpdate"
             }
         }
 
