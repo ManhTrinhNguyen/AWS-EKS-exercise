@@ -103,14 +103,22 @@
   - [Configure Tags on Autoscaling Group . Automate created by AWS](#Configure-Tags-on-Autoscaling-Group-Automate-created-by-AWS)
  
   - [Deploy Cluster Autoscaler](#Deploy-Cluster-Autoscaler)
+ 
+- [Create a Shared Library](#Create-a-Shared-Library)
+
+  - [Structure of Jenkins Share Lib](#Structure-of-Jenkins-Share-Lib)
+    
+  - [Make Share Library Available](#Make-Share-Library-Available)
+ 
+  - [Project Scoped Share Library](#Project-Scoped-Share-Library)
+ 
+  - [Use Share Library in Jenkinfile](#Use-Share-Library-in-Jenkinfile)
   
 # AWS-EKS 
 
 ## Project Overview
 
 This project demonstrates a **complete CI/CD pipeline** integrated with **AWS EKS (Elastic Kubernetes Service)**, **Auto-Scaling**, **Terraform**, **Jenkins**, and **Docker**. It showcases how to automate everything from infrastructure provisioning to containerized application deployment using scalable cloud-native architecture.
-
----
 
 #### 🎯 Objectives
 
@@ -119,8 +127,6 @@ This project demonstrates a **complete CI/CD pipeline** integrated with **AWS EK
 - Automatically build and push Docker images to AWS ECR.
 - Deploy to EKS using dynamic Helm chart or kubectl apply.
 - Enable Kubernetes Auto Scaling (Node Group + HPA).
-
----
 
 #### 🔧 Tech Stack
 
@@ -134,7 +140,6 @@ This project demonstrates a **complete CI/CD pipeline** integrated with **AWS EK
 | Monitoring             | Horizontal Pod Autoscaler (HPA), Cluster Autoscaler |
 | GitOps Trigger         | Webhooks & Multibranch Pipeline                  |
 
----
 
 #### Key Features
 
@@ -173,7 +178,6 @@ Step 2: To create kubeconfig file locally : `aws eks update-kubeconfig --name <c
 
  - After Created kubeconfig file my Local machine already connected to AWS K8 Cluster. The file will store in `.kube/config`
 
-## Deploy Mysql and phpmyadmin 
 
 #### Deploy Mysql 
 
@@ -1755,11 +1759,132 @@ In that Yamlfile :
 
 To check my Deployment : `kubectl get deployment -n kube-system cluster-autoscaler`
 
+## Create a Shared Library 
+
+Let's say I have a Java Gradle Project that have multiple Microservices . Each Mirco have 1 Pipeline . I would build each Microservice as a Separate Application . Most of the build Logic are same like docker build, docker login etc ... logic . But I don't want to repeat myself with the same logic it is so unefficient
+
+The efficient way to do is Jenkin Shared library . This is an extension to Pipeline and Jenkins Shared Library is its own Repository which is written in Groovy, and I can write all the Logic that is gonna be shared accross many different applications in the shared Library and reference that Logic from Jenkinfile in each project . This is for 1 project that have multiple Microservices
+
+#### Structure of Jenkins Share Lib
 
 
+```
+my-shared-library/
+├── vars/
+│   └── myFunction.groovy       # Global function (callable in Jenkinsfile as `myFunction()`)
+├── src/
+│   └── com/
+│       └── example/
+│           └── MyClass.groovy  # Helper classes
+├── README.md
+```
+
+**vars folder**: All the files that I have here all those executable functions, I am referencing them by the name of the file . I will use that to call that function in Jenkinfiles
+
+For example : This is a buildJar.groovy function: 
+
+```
+#!/user/bin/env groovy
+
+# This line above is let my editor detect that I am working with Groovy script . I can use the same annotation in Jenkinfiles to let my editor know that I am working with Groovy script bcs the function has no .groovy
+
+def call () {
+  echo 'I am building a Jar'
+  sh 'gradle build'
+}
+```
+
+For example : this is a buildImage.groovy function . 
+
+```
+#!/user/bin/env groovy
+
+# This line above is let my editor detect that I am working with Groovy script . I can use the same annotation in Jenkinfiles to let my editor know that I am working with Groovy script bcs the function has no .groovy
+
+def call (String ECR_REPO, String IMAGE_NAME, String ECR_SERVER_URL) {
+   echo "building the docker image..."
+   withCredentials([usernamePassword(credentialsId: 'AWS_Credentials', passwordVariable: 'PASS', usernameVariable: 'USER')]){
+      sh "docker build -t ${ECR_REPO}:${IMAGE_NAME} ."
+      sh "echo $PASS | docker login -u $USER --password-stdin ${ECR_SERVER_URL}"
+      sh "docker push ${ECR_REPO}:${IMAGE_NAME}"
+}
+```
+
+and I can use it in Jenkinsfile like this : 
+
+```
+@Library('your-shared-library-name') _
+
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "v1.0.0"
+        ECR_REPO = "123456789012.dkr.ecr.us-west-1.amazonaws.com/my-app"
+        ECR_URL_SERVER = "123456789012.dkr.ecr.us-west-1.amazonaws.com"
+    }
+
+    stages {
+        stage('Build and Push') {
+            steps {
+                dockerPush(env.IMAGE_NAME, env.DOCKER_REPO, env.DOCKER_REPO_SERVER)
+            }
+        }
+    }
+}
+```
+
+#### Make Share Library Available
+
+Go to Manage Jenkin -> System -> Global Pipeline Library -> Add Library -> Provide Git URL (Mordern SCM) , Add credentials
+
+**Default version** : This can be either branch, this can also be commit hash or this can be a tag . Just like any other Application I should version my Jenkin Share Lib so whenever I make change I create a new version, tag and then I can reference that tag here . If I define Main Branch here then every new change or every commit to a Repo will be immediately available in whole Jenkin for all the Pipeline and it is a breaking change then my Jenkin file or my Pipeline will not work anymore so having a fixed version is a good idea
+
+With `Allow default version to be overridden` I can override that default version in my Jenkinfile If I want to
 
 
+#### Use Share Library in Jenkinfile
 
+In order to use function in Jenkins Share Lib I have to import that Share Lib : `@Library('jenkins-shared-lib')` . I can also choose specific version if I have `@Library('jenkins-shared-lib@2.0')`
+
+ - `jenkins-shared-lib`: Is the name that I gave when defining in global library
+
+ - !!! NOTE : If I don't have import statement or variable definition directly after the Import I have to add `_` like this `@Library('jenkins-shared-lib')_`
+
+#### Project Scoped Share Library
+
+Let say I have Jenkins share Lib but for only my project, other project or other team may not need them maybe I want to share them for my own pipeline . So I don't need to add Share Lib in Global Library and instead I will refererence library directly from Jenkinsfile
+
+```
+library identifier: 'jenkins-shared-library@main', retriever: modernSCM(
+    [$class: 'GitSCMSource',
+     remote: https://github.com/ManhTrinhNguyen/Jenkins-Docker-Excercise-Shared-Library.git,
+     credentialsId: 'github-credentials'
+    ]
+)
+```
+
+#### Increment Gradle Version 
+
+I will extract Increment Gradle Version to Shared Lib 
+
+This is for patch version only .
+
+In `vars/Increment_Gradle_Version.groovy` : 
+
+```
+def call (String ECR_REPO) {
+  echo "Increment App Version"
+
+  sh "gradle patchVersionUpdate"
+
+  def version = readProperties(file: 'version.properties')
+
+  env.IMAGE_NAME = "${ECR_REPO}:${version['major']}.${version['minor']}.${version['patch']}"
+
+  echo "${env.IMAGE_NAME}"
+}
+```
 
 
 
