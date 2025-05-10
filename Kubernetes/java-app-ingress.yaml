@@ -5,7 +5,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: 45-79-231-7.ip.linodeusercontent.com # I use this for host because I don't have a domain name . For test purposes
+  - host: a9062ded7d7d74541a1add61ff9f7064-1829948278.us-west-1.elb.amazonaws.com # I use this for host because I don't have a domain name . For test purposes
     http:
       paths:
       - path: /
