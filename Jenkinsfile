@@ -19,7 +19,9 @@ pipeline {
     stages {
         stage("Version Increment Dynamic"){
             steps {
+              script {
                 Increment_Version_Gradle 
+              }
             }
         }
 
