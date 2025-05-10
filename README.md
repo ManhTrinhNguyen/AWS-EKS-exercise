@@ -126,7 +126,7 @@
  
   - [Commit to Git Repo](#Commit-to-Git-Repo)
  
-  - [Deploy_with_Kubernetes](#Deploy-with-Kubernetes)
+  - [Deploy with Kubernetes](#Deploy-with-Kubernetes)
   
 # AWS-EKS 
 
@@ -1775,6 +1775,8 @@ To check my Deployment : `kubectl get deployment -n kube-system cluster-autoscal
 
 ## Create a Shared Library 
 
+I will create another branch to test Jenkins Shared Lib : `git checkout -b Use_Shared_Lib`
+
 Let's say I have a Java Gradle Project that have multiple Microservices . Each Mirco have 1 Pipeline . I would build each Microservice as a Separate Application . Most of the build Logic are same like docker build, docker login etc ... logic . But I don't want to repeat myself with the same logic it is so unefficient
 
 The efficient way to do is Jenkin Shared library . This is an extension to Pipeline and Jenkins Shared Library is its own Repository which is written in Groovy, and I can write all the Logic that is gonna be shared accross many different applications in the shared Library and reference that Logic from Jenkinfile in each project . This is for 1 project that have multiple Microservices
@@ -2069,8 +2071,36 @@ stage("Commit to Git") {
 
 #### Deploy with Kubernetes
 
-I will
+I will create a new file `vars/Deploy_with_Kubernetes.groovy`. Then I will extract the logic into that function 
 
+I will pass a Parameter to it as a path to my Kubernetes Yaml file 
+
+```
+def call(String K8_Deploy_Yaml_file) {
+  echo "Deploy Java Application "
+  sh "envsubst < ${K8_Deploy_Yaml_file} | kubectl apply -f -"
+}
+```
+
+Then I Can use it in my Jenkinfile like this : 
+
+```
+stage("Deploy with Kubernetes") {
+  environment{
+    AWS_ACCESS_KEY_ID = credentials('Aws_Access_Key_Id')
+    AWS_SECRET_ACCESS_KEY = credentials('Aws_Secret_Access_Key')
+    APP_NAME = "java-app"
+  }
+  steps {
+    script {
+      Deploy_with_Kubernetes("Kubernetes/java-app-configmap.yaml")
+      Deploy_with_Kubernetes("Kubernetes/java-app-ingress.yaml")
+      Deploy_with_Kubernetes("Kubernetes/java-app-secret.yaml")
+      Deploy_with_Kubernetes("Kubernetes/java-app.yaml")
+    }
+  }
+}
+```
 
 
 
