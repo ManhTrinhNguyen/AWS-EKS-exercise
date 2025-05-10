@@ -113,6 +113,8 @@
   - [Project Scoped Share Library](#Project-Scoped-Share-Library)
  
   - [Use Share Library in Jenkinfile](#Use-Share-Library-in-Jenkinfile)
+ 
+  - [Increment Gradle Version](#Increment-Gradle-Version)
   
 # AWS-EKS 
 
@@ -1876,7 +1878,7 @@ In `vars/Increment_Gradle_Version.groovy` :
 def call (String Update_Version) {
   echo "Increment App Version"
 
-  sh "gradle ${Update_Version}"   // To Increase Major Version : gradle majorVersionUpdate,  To Increase Minor Version : gradle minorVersionUpdate , To Increase Patch Version : gradle patchVersionUpdate
+  sh "gradle ${Update_Version}"  
 
   def version = readProperties(file: 'version.properties')
 
@@ -1887,6 +1889,24 @@ def call (String Update_Version) {
 ```
 
 Bcs ${ECR_REPO} is in my Global Environment Variable so I don't need to set it as a Parameter 
+
+The way I use `Increment_Version_Gradle` function is I called that function and pass a parameter to it 
+
+ - To Increase Major Version pass ` majorVersionUpdate`
+
+ - To Increase Minor Version pass `minorVersionUpdate`
+
+ - To Increase Patch Version pass `patchVersionUpdate`
+
+```
+stage("Version Increment Dynamic"){
+    steps {
+      script {
+        Increment_Version_Gradle("patchVersionUpdate")
+      }
+    }
+}
+```
 
 
 
