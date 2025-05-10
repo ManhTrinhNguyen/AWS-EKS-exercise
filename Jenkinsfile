@@ -19,17 +19,7 @@ pipeline {
     stages {
         stage("Version Increment Dynamic"){
             steps {
-                script {
-                    echo 'Increase Patch Version ....'
-
-                    sh 'gradle patchVersionUpdate'
-
-                    def version = readProperties(file: 'version.properties')
-
-                    env.IMAGE_NAME = "${ECR_REPO}:${version['major']}.${version['minor']}.${version['patch']}"
-
-                    echo "${env.IMAGE_NAME}"
-                }
+                Increment_Version_Gradle("patchVersionUpdate")
             }
         }
 
@@ -76,19 +66,19 @@ pipeline {
           }
         }
 
-        stage("Deploy with Kubernetes") {
-          environment{
-            AWS_ACCESS_KEY_ID = credentials('Aws_Access_Key_Id')
-            AWS_SECRET_ACCESS_KEY = credentials('Aws_Secret_Access_Key')
-            APP_NAME = "java-app"
-          }
-          steps {
-            script {
-              echo "Deploy Java Application "
-              sh "envsubst < Kubernetes/java-app.yaml | kubectl apply -f -"
-            }
-          }
-        }
+        // stage("Deploy with Kubernetes") {
+        //   environment{
+        //     AWS_ACCESS_KEY_ID = credentials('Aws_Access_Key_Id')
+        //     AWS_SECRET_ACCESS_KEY = credentials('Aws_Secret_Access_Key')
+        //     APP_NAME = "java-app"
+        //   }
+        //   steps {
+        //     script {
+        //       echo "Deploy Java Application "
+        //       sh "envsubst < Kubernetes/java-app.yaml | kubectl apply -f -"
+        //     }
+        //   }
+        // }
 
         stage("Commit to Git") {
           steps {
