@@ -67,6 +67,9 @@ pipeline {
           }
           steps {
             script {
+              Deploy_with_Kubernetes("Kubernetes/java-app-configmap.yaml")
+              Deploy_with_Kubernetes("Kubernetes/java-app-ingress.yaml")
+              Deploy_with_Kubernetes("Kubernetes/java-app-secret.yaml")
               Deploy_with_Kubernetes("Kubernetes/java-app.yaml")
             }
           }
