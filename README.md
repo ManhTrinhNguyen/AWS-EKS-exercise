@@ -121,6 +121,10 @@
   - [Build Docker Image](#Build-Docker-Image)
  
   - [Docker Login to ECR](#Docker-Login-to-ECR)
+ 
+  - [Push Docker Image To ECR](#Push-Docker-Image-To-ECR)
+ 
+  - [Commit to Git Repo](#Commit-to-Git-Repo)
   
 # AWS-EKS 
 
@@ -1969,10 +1973,16 @@ stage("Build Docker Image") {
 I will create a new file `vars/Docker_Login_ECR.groovy`. Then I will extract a Docker Image Logic into that function 
 
 ```
-withCredentials([usernamePassword(credentialsId: 'AWS_Credential', usernameVariable: 'USER', passwordVariable: 'PWD')]){
-  sh "echo ${PWD} | docker login --username ${USER} --password-stdin ${ECR_URL}"
-  
-  echo "Login successfully"
+#!/user/bin/env groovy
+
+def call() {
+    echo "Login to Docker Hub"
+
+    withCredentials([
+            usernamePassword(credentialsId: 'Docker_Hub_Credential', usernameVariable: 'USER', passwordVariable: 'PWD')
+    ]){
+        sh "echo ${PWD} | docker login -u ${USER} --password-stdin"
+    }
 }
 ```
 
@@ -1989,6 +1999,72 @@ stage("Login to ECR") {
   }
 }
 ```
+
+#### Push Docker Image To ECR
+
+I will create a new file `vars/Docker_Push_Image.groovy` . Then I will extract a Docker Push Image Logic into that function 
+
+```
+#!/user/bin/env groovy
+
+def call () {
+    sh "docker push ${IMAGE_NAME}"
+    echo "Push Image Success ....."
+}
+```
+
+I have `${IMAGE_NAME}` as a ENV so I don't need to pass it as a Parameters . So my Jenkinsfile will look like this
+
+```
+stage("Push Docker Image to ECR") { 
+  steps {
+    script {
+      Docker_Push_Image()
+    }
+  }
+}
+```
+
+#### Commit to Git Repo 
+
+I will create a new file `vars/Commit_to_Git_Repo.groovy` . Then extract all the logic to that 
+
+```
+def call (String BRANCH_NAME){
+    withCredentials([
+        usernamePassword(credentialsId: 'Github_Credential', usernameVariable: 'USER', passwordVariable: 'PWD')
+    ]){
+    // To set configuration that kept in .git folder and global configuration in git .
+    // I want to set git config Global I can put a flag --global
+    sh 'git config --global user.email "jenkin@gmail.com"' // If there is no User Email at all, Jenkin will complain when commiting changes . It will say there is no email that was detected to attach to as a metadata to that commit
+    sh 'git config --global user.name "Jenkins"'
+
+    // Set Origin access
+    sh "git remote set-url origin https://${USER}:${PWD}@${GIT_URL}"
+
+    sh "git add ."
+    sh 'git commit -m "ci: version bump"'
+    sh "git push origin HEAD:${BRANCH_NAME}"
+    }
+}
+```
+
+I have `${GIT_URL}` as a ENV . So I don't need to pass it as a parameter . 
+
+I also have `${BRANCH_NAME}` as a ENV provided by Jenkin, So I don't need to pass it as a parameter as well. 
+
+My Jenkinfile will look like this 
+
+```
+stage("Commit to Git") {
+  steps {
+    script {
+      Commit_to_Git_Repo()
+    }
+  }
+}
+```
+
 
 
 
