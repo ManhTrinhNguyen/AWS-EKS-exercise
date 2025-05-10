@@ -19,7 +19,7 @@ pipeline {
     stages {
         stage("Version Increment Dynamic"){
             steps {
-                Increment_Version_Gradle "patchVersionUpdate"
+                Increment_Version_Gradle 
             }
         }
 
