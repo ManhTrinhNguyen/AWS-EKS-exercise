@@ -1,11 +1,11 @@
-// library identifier: 'jenkins-shared-library@main', retriever: modernSCM(
-//     [$class: 'GitSCMSource',
-//      remote: 'https://github.com/ManhTrinhNguyen/Share_Library_Exercise.git',
-//      credentialsId: 'Github_Credential'
-//     ]
-// )
+library identifier: 'jenkins-shared-library@main', retriever: modernSCM(
+    [$class: 'GitSCMSource',
+     remote: 'https://github.com/ManhTrinhNguyen/Share_Library_Exercise.git',
+     credentialsId: 'Github_Credential'
+    ]
+)
 
-pipeline {   
+ pipeline {   
     agent any
     tools {
         gradle 'gradle-8.14'
@@ -113,3 +113,11 @@ pipeline {
         }
     }
 } 
+
+
+
+
+
+
+
+
