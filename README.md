@@ -130,6 +130,62 @@
   
 # AWS-EKS 
 
+┌───────────────────────────────────────────┐
+│             GitHub Repository             │◀──────────────────────────────────────────-
+│  - Source Code (Java)                     │                                              │
+│  - Jenkinsfile & Helm Charts              │                                              │
+└───────────────────────────────────────────┘                                              │
+             │ Trigger Webhook                                                             │
+             ▼                                                                             │
+┌───────────────────────────────────────────┐                                              │
+│                Jenkins CI/CD              │                                              │
+│  ┌─────────────────────────────────────┐  │                                              │
+│  │           CI Stages                │  │                                               │
+│  │ ┌───────────────────────────────┐  │  │                                               │
+│  │ │ 1. Dynamic Version Bump       │◀─┼──┘                                               │
+│  │ │    (Gradle patch update)      │  │                                                  │
+│  │ └───────────────────────────────┘  │                                                  │
+│  │ ┌───────────────────────────────┐  │                                                  │
+│  │ │ 2. Build JAR via Gradle       │  │                                                  │
+│  │ └───────────────────────────────┘  │                                                  │
+│  │ ┌───────────────────────────────┐  │                                                  │
+│  │ │ 3. Build Docker Image         │  │                                                  │
+│  │ └───────────────────────────────┘  │                                                  │
+│  │ ┌───────────────────────────────┐  │                                                  │
+│  │ │ 4. Push to AWS ECR            │  │─────────▶ AWS Elastic Container Registry (ECR)   │
+│  │ └───────────────────────────────┘  │                                                  │
+│  └─────────────────────────────────────┘                                                 │
+│                                                                                          │
+│  ┌─────────────────────────────────────┐                                                 │
+│  │           CD Stages                │                                                  │
+│  │ ┌───────────────────────────────┐  │                                                  │
+│  │ │ 5. Create Kubeconfig & Auth   │  │                                                  │
+│  │ │    (IAM + kubeconfig)         │  │                                                  │
+│  │ └───────────────────────────────┘  │                                                  │
+│  │ ┌───────────────────────────────┐  │                                                  │
+│  │ │ 6. Set ENV Vars via `envsubst`│  │                                                  │
+│  │ └───────────────────────────────┘  │                                                  │
+│  │ ┌───────────────────────────────┐  │                                                  │
+│  │ │ 7. Deploy with Helmfile       │  │───────▶ AWS EKS Cluster (Kubernetes)             │
+│  │ │    - Deployment               │  │         - Ingress Controller                     │
+│  │ │    - Service                  │  │         - Java App Pods                          │
+│  │ │    - ConfigMap & Secret       │  │         - MySQL (Helm via Bitnami)               | 
+│  │ └───────────────────────────────┘  │                                                  │
+│  └─────────────────────────────────────┘                                                 │
+│                                                                                          │
+│  ┌─────────────────────────────────────┐                                                 │
+│  │   Version Push to GitHub           │◀────────────────────────────┐                    │
+│  │   (Commit `version.properties`)    │                             │                    │
+│  └─────────────────────────────────────┘                            |                    │
+└───────────────────────────────────────────┘                         │                    │
+                                                                      ▼                    ▼
+                                                              ┌──────────────────────┐   ┌────────────────────────┐
+                                                              │  AWS IAM + IRSA      │   │  Horizontal Pod Autoscaler│
+                                                              │  for Secure Access   │   │  Cluster Autoscaler     │
+                                                              └──────────────────────┘   └────────────────────────┘
+
+
+
 ## Project Overview
 
 This project demonstrates a **complete CI/CD pipeline** integrated with **AWS EKS (Elastic Kubernetes Service)**, **Auto-Scaling**, **Terraform**, **Jenkins**, and **Docker**. It showcases how to automate everything from infrastructure provisioning to containerized application deployment using scalable cloud-native architecture.
