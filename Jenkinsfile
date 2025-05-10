@@ -20,7 +20,7 @@ pipeline {
     stages {
       
         stage("Version Increment Dynamic"){
-            steps {
+            steps {`
               script {
                 Increment_Version_Gradle("patchVersionUpdate")
               }
