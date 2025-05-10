@@ -45,16 +45,15 @@ pipeline {
         stage("Login to ECR") {
           steps {
             script {
-              Docker_Login_ECR
+              Docker_Login_ECR()
             }
           }
         }
 
-        stage("Push Docker Image to ECR") {
+        stage("Push Docker Image to ECR") { 
           steps {
             script {
-              sh "docker push ${IMAGE_NAME}"
-              echo "Push Image Success ....."
+              Docker_Push_Image()
             }
           }
         }
