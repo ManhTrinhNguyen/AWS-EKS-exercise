@@ -17,6 +17,7 @@ pipeline {
     }
 
     stages {
+      
         stage("Version Increment Dynamic"){
             steps {
               script {
@@ -28,9 +29,7 @@ pipeline {
         stage("Build Jar") {
           steps {
             script {
-              echo "Build Gradle Jar ...."
-
-              sh 'gradle clean build'
+              Build_Gradle_Jar()
             }
           }
         }
