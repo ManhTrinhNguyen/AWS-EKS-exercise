@@ -6,6 +6,10 @@
 
 - [Deploy Mysql for Production](#Deploy-Mysql-for-Production)
 
+- [Use Terraform to enable EBS CSI Driver](#Use-Terraform-to-enable-EBS-CSI-Driver)
+
+- [MySQL EKS Dependency](#MySQL-EKS-Dependency)
+
 - [Deploy Java Application](#Deploy-Java-Application)
 
   - [Kubernetes Best Practice](#Kubernetes-Best-Practice)
@@ -129,65 +133,6 @@
   - [Deploy with Kubernetes](#Deploy-with-Kubernetes)
   
 # AWS-EKS 
-
-```
-
-┌───────────────────────────────────────────┐
-│             GitHub Repository             │◀──────────────────────────────────────────-
-│  - Source Code (Java)                     │                                              │
-│  - Jenkinsfile & Helm Charts              │                                              │
-└───────────────────────────────────────────┘                                              │
-             │ Trigger Webhook                                                             │
-             ▼                                                                             │
-┌───────────────────────────────────────────┐                                              │
-│                Jenkins CI/CD              │                                              │
-│  ┌─────────────────────────────────────┐  │                                              │
-│  │           CI Stages                │  │                                               │
-│  │ ┌───────────────────────────────┐  │  │                                               │
-│  │ │ 1. Dynamic Version Bump       │◀─┼──┘                                               │
-│  │ │    (Gradle patch update)      │  │                                                  │
-│  │ └───────────────────────────────┘  │                                                  │
-│  │ ┌───────────────────────────────┐  │                                                  │
-│  │ │ 2. Build JAR via Gradle       │  │                                                  │
-│  │ └───────────────────────────────┘  │                                                  │
-│  │ ┌───────────────────────────────┐  │                                                  │
-│  │ │ 3. Build Docker Image         │  │                                                  │
-│  │ └───────────────────────────────┘  │                                                  │
-│  │ ┌───────────────────────────────┐  │                                                  │
-│  │ │ 4. Push to AWS ECR            │  │─────────▶ AWS Elastic Container Registry (ECR)   │
-│  │ └───────────────────────────────┘  │                                                  │
-│  └─────────────────────────────────────┘                                                 │
-│                                                                                          │
-│  ┌─────────────────────────────────────┐                                                 │
-│  │           CD Stages                │                                                  │
-│  │ ┌───────────────────────────────┐  │                                                  │
-│  │ │ 5. Create Kubeconfig & Auth   │  │                                                  │
-│  │ │    (IAM + kubeconfig)         │  │                                                  │
-│  │ └───────────────────────────────┘  │                                                  │
-│  │ ┌───────────────────────────────┐  │                                                  │
-│  │ │ 6. Set ENV Vars via `envsubst`│  │                                                  │
-│  │ └───────────────────────────────┘  │                                                  │
-│  │ ┌───────────────────────────────┐  │                                                  │
-│  │ │ 7. Deploy with Helmfile       │  │───────▶ AWS EKS Cluster (Kubernetes)             │
-│  │ │    - Deployment               │  │         - Ingress Controller                     │
-│  │ │    - Service                  │  │         - Java App Pods                          │
-│  │ │    - ConfigMap & Secret       │  │         - MySQL (Helm via Bitnami)               | 
-│  │ └───────────────────────────────┘  │                                                  │
-│  └─────────────────────────────────────┘                                                 │
-│                                                                                          │
-│  ┌─────────────────────────────────────┐                                                 │
-│  │   Version Push to GitHub           │◀────────────────────────────┐                    │
-│  │   (Commit `version.properties`)    │                             │                    │
-│  └─────────────────────────────────────┘                            |                    │
-└───────────────────────────────────────────┘                         │                    │
-                                                                      ▼                    ▼
-                                                              ┌──────────────────────┐   ┌────────────────────────┐
-                                                              │  AWS IAM + IRSA      │   │  Horizontal Pod Autoscaler│
-                                                              │  for Secure Access   │   │  Cluster Autoscaler     │
-                                                              └──────────────────────┘   └────────────────────────┘
-
-
-```
 
 ## Project Overview
 
@@ -377,8 +322,42 @@ Step 3 : Confirm the EBS CSI driver is installed : `kubectl get pods -n kube-sys
 
 Every application (pod) runs under a ServiceAccount. If I want it to do something — inside the cluster or outside (like AWS APIs) — I need to give that ServiceAccount the right permissions or attach a role
 
-If I use **Terraform** I can use this : `enable_ebs_csi_driver = true`
+#### Use Terraform to enable EBS CSI Driver
 
+Since K8s version 1.23 an additional driver is required to provision K8s storage in AWS. K8s volumes attach to cloud platform's storage - for AWS this means they attach to EBS volumes. The EBS CSI driver is responsible for handling EBS storage tasks and is not installed by default so without the installation of this driver, K8s volumes cannot be attached to storage in AWS.
+
+Processes on the node group nodes are responsible for creating and attaching these volumes. Because of that, we need to add a permissions policy to the node group so it can request these changes through AWS - this is defined as a managed AWS policy called: `AmazonEBSCSIDriverPolicy`, which we are attaching to the node groups.
+
+So the following 2 code snippets must be added to your EKS Terraform file to make sure EBS CSI driver is activated and the node group nodes have the needed permissions:
+
+```
+# 1. Including the add-on as part of EKS module:
+
+cluster_addons = {
+    aws-ebs-csi-driver = {}
+}
+
+# 2. Adding associated permissions as part of node group configuration:
+
+iam_role_additional_policies = {
+    AmazonEBSCSIDriverPolicy = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+}
+```
+#### MySQL EKS Dependency
+
+An additional dependency is also required to be defined in your MySQL Terraform configuration. Use the following to ensure that Terraform waits for the EKS cluster to be fully created before provisioning dependent resources
+
+```
+data "aws_eks_cluster" "cluster" {
+  name = module.eks.cluster_name
+  depends_on = [module.eks.cluster_name]
+}
+
+data "aws_eks_cluster_auth" "cluster" {
+  name = module.eks.cluster_name
+  depends_on = [module.eks.cluster_name]
+}
+```
 
 ## Deploy Java Application 
 
