@@ -134,6 +134,10 @@
   
 # AWS-EKS 
 
+## CI/CD diagram overview
+
+<img width="900" height="582" alt="Screenshot 2025-12-23 at 12 21 34" src="https://github.com/user-attachments/assets/f79ad835-817f-4572-8204-638635fd25a2" />
+
 ## Project Overview
 
 This project demonstrates a **complete CI/CD pipeline** integrated with **AWS EKS (Elastic Kubernetes Service)**, **Auto-Scaling**, **Terraform**, **Jenkins**, and **Docker**. It showcases how to automate everything from infrastructure provisioning to containerized application deployment using scalable cloud-native architecture.
@@ -2139,6 +2143,7 @@ stage("Deploy with Kubernetes") {
   }
 }
 ```
+
 
 
 
