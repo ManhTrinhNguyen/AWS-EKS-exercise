@@ -1,3 +1,7 @@
+- [CI/CD diagram overview](#CI/CD-diagram-overview)
+
+- [EKS Cluster Diagram Overview](#EKS-Cluster-Diagram-Overview)
+
 - [Project Overview](#Project-Overview)
 
 - [Create EKS Cluster](#Create-EKS-Cluster)
@@ -140,7 +144,7 @@
 
 ## EKS Cluster Diagram Overview 
 
-<img width="900" height="633" alt="Screenshot 2025-12-23 at 13 09 30" src="https://github.com/user-attachments/assets/33e48d85-3bb2-40b5-acdc-1e0d116924c1" />
+<img width="1242" height="612" alt="Screenshot 2025-12-23 at 13 15 26" src="https://github.com/user-attachments/assets/73b546bf-8429-4621-a786-60e546858372" />
 
 ## Project Overview
 
@@ -2147,6 +2151,7 @@ stage("Deploy with Kubernetes") {
   }
 }
 ```
+
 
 
 
