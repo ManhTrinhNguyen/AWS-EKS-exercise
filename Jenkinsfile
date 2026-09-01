@@ -76,38 +76,31 @@ pipeline {
           }
         }
 
-        // stage("Deploy with Kubernetes") {
-        //   environment{
-        //     AWS_ACCESS_KEY_ID = credentials('Aws_Access_Key_Id')
-        //     AWS_SECRET_ACCESS_KEY = credentials('Aws_Secret_Access_Key')
-        //     APP_NAME = "java-app"
-        //   }
+        // Clone or Pull K8s repo to Jenkins 
+
+        stage("Clone/Pull K8s Repo") {
+          steps {
+            script {
+              if(fileExists('GitOps')) {
+                echo 'Cloned repo already exist - Pulling latest changes'
+
+                dir("GitOps") {
+                  sh 'git pull'
+                }
+              } else {
+                echo 'Repo does not exist - Cloning Repo' 
+                sh 'git clone -b gitops https://github.com/ManhTrinhNguyen/AWS-EKS-exercise.git'
+              }
+            }
+          }
+        }
+
+        // Update K8s manifests
+
+        // stage("Update K8s manifests") {
         //   steps {
-        //     script {
-        //       echo "Deploy Java Application "
-        //       sh "envsubst < Kubernetes/java-app.yaml | kubectl apply -f -"
-        //     }
-        //   }
-        // }
+        //     dir("GitOps/java-app") {
 
-        // stage("Commit to Git") {
-        //   steps {
-        //     script {
-        //       withCredentials([
-        //         usernamePassword(credentialsId: 'Github_Credential', usernameVariable: 'USER', passwordVariable: 'PWD')
-        //       ]){
-        //         // To set configuration that kept in .git folder and global configuration in git .
-        //         // I want to set git config Global I can put a flag --global
-        //         sh 'git config --global user.email "jenkin@gmail.com"' // If there is no User Email at all, Jenkin will complain when commiting changes . It will say there is no email that was detected to attach to as a metadata to that commit
-        //         sh 'git config --global user.name "Jenkins"'
-
-        //         // Set Origin access
-        //         sh "git remote set-url origin https://${USER}:${PWD}@github.com/ManhTrinhNguyen/AWS-EKS-exercise.git"
-
-        //         sh "git add ."
-        //         sh 'git commit -m "ci: version bump"'
-        //         sh 'git push origin HEAD:main'
-        //       }
         //     }
         //   }
         // }

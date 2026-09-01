@@ -2156,7 +2156,21 @@ stage("Deploy with Kubernetes") {
 
 ## GitOps
 
-Step 1 : Create another branch `git checkout -b gitops`
+Create another branch `git checkout -b gitops`
+
+#### Add ArgoCD token
+
+Jenkins -> Setting -> Credential -> Username Password
+
+#### Clone/Pull Kubernetes Repo stage 
+
+I will clone K8s repo to Jenkins so Jenkins can use to update a manifests
+
+
+
+
+
+
 
 
 
