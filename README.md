@@ -135,6 +135,8 @@
   - [Commit to Git Repo](#Commit-to-Git-Repo)
  
   - [Deploy with Kubernetes](#Deploy-with-Kubernetes)
+
+- [GitOps](#GitOps)
   
 # AWS-EKS 
 
@@ -2152,6 +2154,9 @@ stage("Deploy with Kubernetes") {
 }
 ```
 
+## GitOps
+
+Step 1 : Create another branch `git checkout -b gitops`
 
 
 
