@@ -1,4 +1,4 @@
-- [CI/CD diagram overview](#CI/CD-diagram-overview) Hien ne
+- [CI/CD diagram overview](#CI/CD-diagram-overview)
 
 - [EKS Cluster Diagram Overview](#EKS-Cluster-Diagram-Overview)
 
