@@ -8,7 +8,7 @@
 pipeline {   
     agent any
     tools {
-        gradle 'gradle-9.0'
+        gradle 'gradle-8.0'
     }
 
     environment {
