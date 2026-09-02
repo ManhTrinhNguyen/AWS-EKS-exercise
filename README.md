@@ -137,7 +137,7 @@
   - [Deploy with Kubernetes](#Deploy-with-Kubernetes)
  
 - [GitOps](#GitOps)
-  
+  - [ArgoCD Installation](#ArgoCD-Installation)
   - [Add ArgoCD token](#Add-ArgoCD-token)
   - [Clone/Pull Kubernetes Repo stage](#Clone/Pull-Kubernetes-Repo-stage)
   - [Update image version stage](#Update-image-version-stage)
@@ -2162,6 +2162,42 @@ stage("Deploy with Kubernetes") {
 }
 ```
 ## GitOps
+
+### Jenkins CI/CD and Gitobs Architecture 
+
+```
+Jenkins CI
+   ↓
+Build + test
+   ↓
+Push image to ECR
+   ↓
+Update GitOps repository
+   ↓
+Argo CD reconciliation
+   ↓
+Deploy to EKS
+```
+
+### ArgoCD Installation
+
+Go to `cd GitOps`
+Step 1: Install Argocd in the Cluster 
+
+- Create argocd namespace `kubectl create namespace argocd`
+- Install argo cd `kubectl apply -n argocd --server-side --force-conflicts -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml`
+
+Step 2 : Download Argocd CLI
+
+- MacOS : `brew install argocd`
+
+Step 3 : Access Argo CD by using port-forwarding
+
+`kubectl port-forward svc/argocd-server -n argocd 8080:443`
+
+Step 4 : Login in using CLI 
+
+`argocd admin initial-password -n argocd`
 
 Create another branch `git checkout -b gitops`
 
