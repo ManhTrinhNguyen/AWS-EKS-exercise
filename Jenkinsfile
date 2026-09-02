@@ -97,11 +97,23 @@ pipeline {
 
         // Update K8s manifests
 
-        // stage("Update K8s manifests") {
-        //   steps {
-        //     dir("GitOps/java-app") {
+        stage("Update K8s manifests") {
+          steps {
+            dir("GitOps/java-app") {
+              sh """
+                sed -i "s|image: .*|image: ${IMAGE_NAME}|g" java-deployment.yaml
+              """
 
-        //     }
+              sh 'cat java-deployment.yaml'
+            }
+          }
+        }
+
+        // Commit to git 
+
+        // stage("Commit to GitHub") {
+        //   steps {
+
         //   }
         // }
     }

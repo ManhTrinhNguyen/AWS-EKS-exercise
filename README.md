@@ -137,6 +137,8 @@
   - [Deploy with Kubernetes](#Deploy-with-Kubernetes)
 
 - [GitOps](#GitOps)
+
+- [Trouble Shoot](#Trouble-Shoot)
   
 # AWS-EKS 
 
@@ -2170,6 +2172,27 @@ If `GitOps` dir not exist -> Pull the latest change
 
 Else -> Clone the Repo
 
+#### Update image version stage 
+
+
+
+
+
+## Trouble Shoot
+
+### Error status 403 Forbidden while docker login to ECR 
+
+ECR will update its password in every 24 hrs . 
+
+Update ECR login password every 24hrs 
+
+### ERROR: permission denied while trying to connect to the docker API at unix:///var/run/docker.sock 
+
+Mean Jenkins user inside the container don't have a permission to connect to docker API of the host 
+
+Set docker.sock permission for Jenkins user : Exec into jenkins container then -> `chmod 666 /var/run/docker.sock`
+
+set docker.sock permissions outside Jenkins container : `chmod 066 /var/run/docker.sock`
 
 
 
