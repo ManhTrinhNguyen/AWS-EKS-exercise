@@ -2174,6 +2174,12 @@ Else -> Clone the Repo
 
 #### Update image version stage 
 
+Using `dir()` function to navigate to java-app folder 
+
+Using `sed` command to change an image in my java-deployment.yaml
+
+#### Commit to GitHub
+
 
 
 
