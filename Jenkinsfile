@@ -128,11 +128,21 @@ pipeline {
 
                   sh "git add ."
                   sh 'git commit -m "ci: version bump"'
+                  echo "Update new image version : ${IMAGE_VERSION}"
                   sh 'git push origin HEAD:main'
                 }
               }
             }
           } 
+        }
+
+        // Raise PR 
+        stage("Raise PR") {
+          steps {
+            script {
+              echo "Raise PR"
+            }
+          }
         }
     }
 } 

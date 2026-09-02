@@ -2180,9 +2180,17 @@ Using `sed` command to change an image in my java-deployment.yaml
 
 #### Commit to GitHub
 
+Using Github Token to set Orgin Access
 
+Set user name and email by using `git config --global`
 
+Set Origin access `git remote set-url origin https://xxxx`
 
+Add new changed `git add .`
+Commit new changed `git commit -m ""`
+Push new changed `git push origon HEAD:main`
+
+#### Raise a PR stage
 
 ## Trouble Shoot
 
