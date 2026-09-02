@@ -135,6 +135,16 @@
   - [Commit to Git Repo](#Commit-to-Git-Repo)
  
   - [Deploy with Kubernetes](#Deploy-with-Kubernetes)
+ 
+- [GitOps](#GitOps)
+  
+  - [Add ArgoCD token](#Add-ArgoCD-token)
+  - [Clone/Pull Kubernetes Repo stage](#Clone/Pull-Kubernetes-Repo-stage)
+  - [Update image version stage](#Update-image-version-stage)
+  - [Commit to GitHub](#Commit-to-GitHub)
+  - [Raise a PR stage](#Raise-a-PR-stage)
+ 
+- [TroubleShoot](#TroubleShoot)
   
 # AWS-EKS 
 
@@ -2151,7 +2161,63 @@ stage("Deploy with Kubernetes") {
   }
 }
 ```
+## GitOps
 
+Create another branch `git checkout -b gitops`
+
+#### Add ArgoCD token
+
+Jenkins -> Setting -> Credential -> Username Password
+
+#### Clone/Pull Kubernetes Repo stage 
+
+I will clone K8s repo to Jenkins so Jenkins can use to update a manifests
+
+If `GitOps` dir not exist -> Pull the latest change
+
+Else -> Clone the Repo
+
+#### Update image version stage 
+
+Using `dir()` function to navigate to java-app folder 
+
+Using `sed` command to change an image in my java-deployment.yaml
+
+#### Commit to GitHub
+
+Using Github Token to set Orgin Access
+
+Set user name and email by using `git config --global`
+
+Set Origin access `git remote set-url origin https://xxxx`
+
+Add new changed `git add .`
+Commit new changed `git commit -m ""`
+Push new changed `git push origon HEAD:main`
+
+#### Raise a PR stage
+
+## Trouble Shoot
+
+### Error status 403 Forbidden while docker login to ECR 
+
+ECR will update its password in every 24 hrs . 
+
+Update ECR login password every 24hrs 
+
+### ERROR: permission denied while trying to connect to the docker API at unix:///var/run/docker.sock 
+
+Mean Jenkins user inside the container don't have a permission to connect to docker API of the host 
+
+Set docker.sock permission for Jenkins user : Exec into jenkins container then -> `chmod 666 /var/run/docker.sock`
+
+set docker.sock permissions outside Jenkins container : `chmod 066 /var/run/docker.sock`
+
+#### Invalid username or token. Password authentication is not supported for Git operations.
+
+Github no longer support normal GH account password for HTTPS git Operation 
+
+Use a Personal access Token 
 
 
 
