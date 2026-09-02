@@ -2166,6 +2166,10 @@ Jenkins -> Setting -> Credential -> Username Password
 
 I will clone K8s repo to Jenkins so Jenkins can use to update a manifests
 
+If `GitOps` dir not exist -> Pull the latest change
+
+Else -> Clone the Repo
+
 
 
 

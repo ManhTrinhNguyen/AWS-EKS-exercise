@@ -89,7 +89,7 @@ pipeline {
                 }
               } else {
                 echo 'Repo does not exist - Cloning Repo' 
-                sh 'git clone -b gitops https://github.com/ManhTrinhNguyen/AWS-EKS-exercise.git'
+                sh 'git clone -b gitops https://github.com/ManhTrinhNguyen/AWS-EKS-exercise.git GitOps'
               }
             }
           }
