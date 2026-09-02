@@ -89,7 +89,7 @@ pipeline {
                 }
               } else {
                 echo 'Repo does not exist - Cloning Repo' 
-                sh 'git clone -b gitops https://github.com/ManhTrinhNguyen/GitOps.git GitOps'
+                sh 'git clone https://github.com/ManhTrinhNguyen/GitOps.git GitOps'
               }
             }
           }
