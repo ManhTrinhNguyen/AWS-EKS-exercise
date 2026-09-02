@@ -137,11 +137,17 @@
   - [Deploy with Kubernetes](#Deploy-with-Kubernetes)
  
 - [GitOps](#GitOps)
+  
   - [ArgoCD Installation](#ArgoCD-Installation)
+    
   - [Add ArgoCD token](#Add-ArgoCD-token)
+    
   - [Clone/Pull Kubernetes Repo stage](#Clone/Pull-Kubernetes-Repo-stage)
+    
   - [Update image version stage](#Update-image-version-stage)
+    
   - [Commit to GitHub](#Commit-to-GitHub)
+    
   - [Raise a PR stage](#Raise-a-PR-stage)
  
 - [TroubleShoot](#TroubleShoot)
@@ -2163,6 +2169,10 @@ stage("Deploy with Kubernetes") {
 ```
 ## GitOps
 
+Create another branch to implement GitOps: `git -b checkout gitops`
+
+This is my GitOps Repository (Store all the K8s manifests and helm) : src="https://github.com/ManhTrinhNguyen/GitOps/tree/main"
+
 ### Jenkins CI/CD and Gitobs Architecture 
 
 ```
@@ -2233,7 +2243,7 @@ Push new changed `git push origon HEAD:main`
 
 #### Raise a PR stage
 
-## Trouble Shoot
+## TroubleShoot
 
 ### Error status 403 Forbidden while docker login to ECR 
 
