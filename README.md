@@ -2200,6 +2200,11 @@ Set docker.sock permission for Jenkins user : Exec into jenkins container then -
 
 set docker.sock permissions outside Jenkins container : `chmod 066 /var/run/docker.sock`
 
+#### Invalid username or token. Password authentication is not supported for Git operations.
+
+Github no longer support normal GH account password for HTTPS git Operation 
+
+Use a Personal access Token 
 
 
 
